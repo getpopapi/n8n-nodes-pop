@@ -109,6 +109,308 @@ All four operations support the same four input modes:
 
 ---
 
+## Example Payloads
+
+### SdI Invoice (XML) — `POST /create-xml`
+
+```json
+{
+	"license_key": "your_license_key",
+	"data": {
+		"id": 2575,
+		"filename": "IT99900088876_00009",
+		"type": "invoice",
+		"version": "FPR12",
+		"sdi_type": "",
+		"customer_type": "private",
+		"nature": "",
+		"ref_normative": null,
+		"vies": false,
+		"vat_kind": null,
+		"transmitter_data": {
+			"transmitter_id": {
+				"country_id": "IT",
+				"id_code": "IT99900088876"
+			},
+			"progressive": "5b27a73cab",
+			"transmitter_format": "FPR12",
+			"sdi_code": "0000000",
+			"transmitter_contact": {
+				"phone": "",
+				"email": ""
+			},
+			"recipient_pec": ""
+		},
+		"transfer_lender": {
+			"personal_data": {
+				"tax_id_vat": {
+					"country_id": "IT",
+					"id_code": "IT99900088876",
+					"tax_regime": "RF01"
+				},
+				"company_name": "TEST123"
+			},
+			"place": {
+				"address": "Via Roma, 123",
+				"zip_code": "95100",
+				"city": "Catania",
+				"province_id": "CT",
+				"country_id": "IT"
+			},
+			"rea_registration": {
+				"office": "",
+				"number": "",
+				"liquidation_status": ""
+			},
+			"contact": {
+				"phone": "",
+				"email": ""
+			}
+		},
+		"transferee_client": {
+			"personal_data": {
+				"tax_id_vat": {
+					"country_id": "IT",
+					"id_code": ""
+				},
+				"tax_id_code": "PCCLFA75L04A494S",
+				"company_name": "",
+				"first_name": "Alfio",
+				"last_name": "Piccione"
+			},
+			"place": {
+				"address": "Via Roma 123",
+				"zip_code": "95100",
+				"city": "Catania",
+				"province_id": "CT",
+				"country_id": "IT"
+			}
+		},
+		"invoice_body": {
+			"general_data": {
+				"doc_type": "TD01",
+				"currency": "EUR",
+				"date": "2025-01-31",
+				"invoice_number": "WEB9/2025",
+				"invoice_prefix": "WEB",
+				"invoice_suffix": "2025"
+			},
+			"provident_fund": [],
+			"total_document_amount": "16.38"
+		},
+		"purchase_order_data": {
+			"id": "#2575",
+			"date": "2025-01-31"
+		},
+		"connected_invoice_data": [],
+		"order_items": [
+			{
+				"item_code": { "type": "INTERNO", "value": "2563" },
+				"item_type": "product",
+				"gift_product": "no",
+				"description": "Prod 2",
+				"quantity": "1.00",
+				"unit": "N.",
+				"discount_type": "",
+				"discount_percent": "",
+				"discount_amount": "",
+				"unit_price": "4.09",
+				"total_price": "4.09",
+				"rate": "0.00",
+				"total_tax": 0
+			},
+			{
+				"item_code": { "type": "INTERNO", "value": "2570" },
+				"item_type": "product",
+				"gift_product": "no",
+				"description": "Prod 7",
+				"quantity": "1.00",
+				"unit": "N.",
+				"discount_type": "",
+				"discount_percent": "",
+				"discount_amount": "",
+				"unit_price": "4.92",
+				"total_price": "4.92",
+				"rate": "0.00",
+				"total_tax": 0
+			},
+			{
+				"item_code": { "type": "INTERNO", "value": "2569" },
+				"item_type": "product",
+				"gift_product": "no",
+				"description": "Prod 6",
+				"quantity": "1.00",
+				"unit": "N.",
+				"discount_type": "",
+				"discount_percent": "",
+				"discount_amount": "",
+				"unit_price": "7.37",
+				"total_price": "7.37",
+				"rate": "0.00",
+				"total_tax": 0
+			}
+		],
+		"payment_data": {
+			"terms_payment": "TP02",
+			"payment_amount": "16.38",
+			"payment_details": "MP02",
+			"beneficiary": "",
+			"financial_institution": "",
+			"iban": ""
+		},
+		"overrides": {
+			"bollo_force_apply": false
+		}
+	},
+	"integration": {
+		"use": "sdi-via-pop",
+		"action": "create"
+	}
+}
+```
+
+### Peppol Invoice (UBL) — `POST /create-ubl`
+
+```json
+{
+	"license_key": "your_license_key",
+	"plugin_version": "6.5.2",
+	"site_title": "POP dev",
+	"site_url": "http://site.com",
+	"user_agent_version": "6.8.3",
+	"user_agent": "wordpress",
+	"data": {
+		"id": 2855,
+		"parent_id": null,
+		"order_provider": "woocommerce",
+		"xml_style": "",
+		"view": false,
+		"save": false,
+		"save_bulk": false,
+		"filename": "BE0123456789_0000T",
+		"type": "invoice",
+		"version": "FPR12",
+		"sdi_type": "",
+		"customer_type": "company",
+		"nature": "",
+		"ref_normative": null,
+		"vies": false,
+		"vat_kind": null,
+		"transmitter_data": {
+			"transmitter_id": {
+				"country_id": "BE",
+				"id_code": "BE0123456789"
+			},
+			"progressive": "cea0d365b4",
+			"transmitter_format": "FPR12",
+			"sdi_code": "0000000",
+			"transmitter_contact": {
+				"phone": "",
+				"email": "alfio@email.com"
+			},
+			"recipient_pec": ""
+		},
+		"transfer_lender": {
+			"personal_data": {
+				"tax_id_vat": {
+					"country_id": "BE",
+					"id_code": "BE0123456789",
+					"tax_regime": ""
+				},
+				"company_name": "AP test srl"
+			},
+			"place": {
+				"address": "Via Roma, 123",
+				"zip_code": "95100",
+				"city": "Catania",
+				"province_id": "CT",
+				"country_id": "IT"
+			},
+			"rea_registration": {
+				"office": "",
+				"number": "",
+				"liquidation_status": ""
+			},
+			"contact": {
+				"phone": "",
+				"email": "alfio@email.com"
+			}
+		},
+		"transferee_client": {
+			"personal_data": {
+				"tax_id_vat": {
+					"country_id": "BE",
+					"id_code": "BE0727506532"
+				},
+				"tax_id_code": "",
+				"company_name": "Boltchi Perio Implant Concepts",
+				"first_name": "Alfio BE",
+				"last_name": "Piccione",
+				"email": "alfio.piccione@gmail.com"
+			},
+			"place": {
+				"address": "Via test 1212312",
+				"zip_code": "4444",
+				"city": "Belgio",
+				"province_id": "",
+				"country_id": "BE"
+			}
+		},
+		"invoice_body": {
+			"general_data": {
+				"doc_type": "TD01",
+				"currency": "EUR",
+				"date": "2025-10-03",
+				"invoice_number": "WEB097/2025",
+				"invoice_prefix": "WEB",
+				"invoice_suffix": "2025"
+			},
+			"provident_fund": [],
+			"total_document_amount": "4.80"
+		},
+		"purchase_order_data": {
+			"id": "#2855",
+			"date": "2025-10-03"
+		},
+		"connected_invoice_data": [],
+		"order_items": [
+			{
+				"item_code": { "type": "INTERNO", "value": "2636" },
+				"item_type": "product",
+				"gift_product": null,
+				"description": "AAAA",
+				"quantity": "1.00",
+				"unit": "N.",
+				"discount_type": "",
+				"discount_percent": "",
+				"discount_amount": "",
+				"unit_price": "4.80",
+				"total_price": "4.80",
+				"rate": "0.00",
+				"total_tax": 0
+			}
+		],
+		"payment_data": {
+			"terms_payment": "TP02",
+			"payment_amount": "4.80",
+			"payment_details": "MP01",
+			"beneficiary": "",
+			"financial_institution": "",
+			"iban": ""
+		},
+		"overrides": {
+			"bollo_force_apply": false
+		}
+	},
+	"integration": {
+		"use": "peppol-via-pop",
+		"action": "create"
+	}
+}
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -137,116 +439,36 @@ n8n-nodes-pop/
 
 ---
 
-## Testing Locally — Step-by-Step Guide
+## Testing Locally
 
 ### Prerequisites
 
 - **Node.js v22+** (use `.nvmrc`: `nvm use`)
 - **npm**
-- **n8n** installed globally (`npm install -g n8n`) **or** Docker
 
 ---
 
-### Method 1: npm link (recommended)
-
-This is the fastest way to test the node during development. Changes to the TypeScript source are reflected after rebuilding.
-
-**Step 1 — Install dependencies and build**
+### Steps
 
 ```bash
-npm install
-npm run build
+npm install       # Install dependencies
+npm run build     # Compile TypeScript → dist/ (initial build)
+npm run lint      # Check for linting issues
+npm run dev       # Start watch + n8n
 ```
 
-**Step 2 — Create a global npm link**
-
-```bash
-npm link
-```
-
-**Step 3 — Link the package into n8n's custom nodes directory**
-
-```bash
-mkdir -p ~/.n8n/nodes
-cd ~/.n8n/nodes
-npm link @babinimazzari/n8n-nodes-pop
-```
-
-**Step 4 — Start n8n**
-
-```bash
-n8n start
-```
-
-**Step 5 — Open the editor**
-
-Navigate to [http://localhost:5678](http://localhost:5678) in your browser.
-
-**Step 6 — Find the node**
-
-In the node panel, search for **POP**. The node should appear under the _Transform_ category.
-
-**After making code changes:**
-
-```bash
-# In the package directory
-npm run build
-# Restart n8n (stop with Ctrl+C, then run n8n start again)
-```
-
----
-
-### Method 2: Docker with a volume mount
-
-Useful when you want a clean n8n environment without a global installation.
-
-**Step 1 — Build the package**
-
-```bash
-npm install
-npm run build
-```
-
-**Step 2 — Run n8n with the package directory mounted**
-
-```bash
-docker run -it --rm \
-  -p 5678:5678 \
-  -v ~/.n8n:/home/node/.n8n \
-  -v "$(pwd)":/home/node/.n8n/nodes/node_modules/@babinimazzari/n8n-nodes-pop \
-  docker.n8n.io/n8nio/n8n
-```
-
-> On Windows (PowerShell), replace `$(pwd)` with `${PWD}`.
-
-**Step 3 — Open the editor**
-
-Navigate to [http://localhost:5678](http://localhost:5678).
+Open [http://localhost:5678](http://localhost:5678), search for **POP** in the node panel, and start testing. Code changes are picked up automatically — no restart needed.
 
 ---
 
 ### Verifying the node works
 
-Once n8n is running with the node loaded:
-
 1. Create a new workflow
 2. Add a **Manual Trigger** node
 3. Add the **POP** node and connect it to the trigger
-4. Select **Invoice** as the resource and **Create SdI Invoice (XML)** as the operation
-5. Set **Input Mode** to **JSON** and paste a test payload:
-
-```json
-{
-	"license_key": "your_license_key",
-	"data": {
-		"id": 1,
-		"filename": "IT99900088876_00001",
-		"type": "invoice"
-	}
-}
-```
-
-6. Click **Execute node** — you should see either a successful API response or a descriptive error message that includes the full URL, HTTP status, and response body excerpt
+4. Select **Invoice** as the resource and an operation (e.g. **Create SdI Invoice (XML)**)
+5. Set **Input Mode** to **JSON** and paste one of the example payloads from the [Example Payloads](#example-payloads) section above
+6. Click **Execute node** — you should see a successful API response or a descriptive error with the full URL, HTTP status, and response body
 
 ---
 
