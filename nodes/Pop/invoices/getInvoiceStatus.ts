@@ -31,12 +31,16 @@ const OPERATION = 'getInvoiceStatus';
  */
 export const properties: InvoicesProperties = [
 	{
-		displayName: 'Base URL',
+		displayName: 'Environment',
 		name: 'baseUrl',
-		type: 'string',
-		default: 'https://staging7.popapi.io/wp-json/api/v2/',
+		type: 'options',
+		options: [
+			{ name: 'Staging', value: 'staging' },
+			{ name: 'Production', value: 'production' },
+		],
+		default: 'staging',
 		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION] } },
-		description: 'Base URL of the POP API. Change only if your environment differs from the default.',
+		description: 'The POP API environment to use',
 	},
 	{
 		displayName: 'Endpoint Path',

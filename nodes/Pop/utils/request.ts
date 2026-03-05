@@ -17,7 +17,12 @@ import { NodeOperationError } from 'n8n-workflow';
 /** Re-export for convenience so operation files don't need to import from n8n-workflow */
 export type PopRequestOptions = IHttpRequestOptions;
 
-const DEFAULT_BASE_URL = 'https://staging7.popapi.io/wp-json/api/v2/';
+const BASE_URLS: Record<string, string> = {
+	staging: 'https://staging7.popapi.io/wp-json/api/v2/',
+	production: 'https://popapi.io/wp-json/api/v2/',
+};
+
+const DEFAULT_BASE_URL = BASE_URLS.staging;
 
 /**
  * Sends an HTTP request to the POP API and wraps errors with diagnostic info.
@@ -32,8 +37,7 @@ export async function popRequest(
 	options: PopRequestOptions,
 	baseUrl?: string,
 ) {
-	const resolvedBaseUrl =
-		baseUrl && baseUrl.trim() ? baseUrl.trim() : DEFAULT_BASE_URL;
+	const resolvedBaseUrl = (baseUrl && BASE_URLS[baseUrl]) ? BASE_URLS[baseUrl] : DEFAULT_BASE_URL;
 
 	const computeFinalUrl = (base: string, path: string | undefined) => {
 		const baseTrim = base.endsWith('/') ? base : base + '/';

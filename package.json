@@ -20,13 +20,13 @@
     "url": "git+https://github.com/babinimazzari/n8n-nodes-pop.git"
   },
   "scripts": {
-    "build": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs build",
+    "build": "n8n-node build",
     "build:watch": "tsc --watch",
-    "dev": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs dev",
-    "lint": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs lint",
-    "lint:fix": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs lint --fix",
-    "release": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs release",
-    "prepublishOnly": "node node_modules/@n8n/node-cli/bin/n8n-node.mjs prerelease"
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
   },
   "files": [
     "dist"

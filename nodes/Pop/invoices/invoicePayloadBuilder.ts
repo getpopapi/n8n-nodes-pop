@@ -10,8 +10,8 @@
  * - 'peppol': European Peppol network via create-ubl endpoint
  *
  * Key differences between variants:
- * - Peppol includes extra metadata fields (parent_id, order_provider, etc.)
- * - Peppol includes top-level site/plugin metadata before the data object
+ * - Peppol includes extra metadata fields (xml_style, view, save, save_bulk)
+ * - Peppol includes top-level user_agent_version metadata
  * - Tax regime defaults to 'RF01' for SdI, empty string for Peppol
  * - SDI type comes from a required top-level field for SdI, from additional options for Peppol
  *
@@ -77,20 +77,6 @@ export function buildInvoicePayload(
 	const bank = params.bankDetails?.bankValues ?? {};          // Bank details (MP05 only)
 	const opts = params.additionalOptions ?? {};                // Advanced/optional settings
 
-	// Parse JSON fields that may arrive as strings from n8n's collection UI.
-	// Users can enter JSON arrays as strings; we need to parse them into actual arrays.
-	let providentFund: unknown[] = [];
-	if (opts.providentFund) {
-		try {
-			providentFund =
-				typeof opts.providentFund === 'string'
-					? JSON.parse(opts.providentFund)
-					: opts.providentFund;
-		} catch {
-			providentFund = [];
-		}
-	}
-
 	let connectedInvoiceData: unknown[] = [];
 	if (opts.connectedInvoiceData) {
 		try {
@@ -106,26 +92,20 @@ export function buildInvoicePayload(
 	// Build the complete API payload. The structure matches the POP API v2 schema
 	// as documented in createXmlPayload.txt (SdI) and createUblPayload.txt (Peppol).
 	const payload: AnyRecord = {
+		user_agent: opts.userAgent || 'api',
 		license_key: params.licenseKey,
-		// Peppol includes additional top-level metadata fields before the data object.
-		// These identify the originating system (e.g. WordPress/WooCommerce plugin).
+		// Peppol includes an optional top-level user_agent_version metadata field.
 		...(variant === 'peppol'
 			? {
-					...(opts.pluginVersion ? { plugin_version: opts.pluginVersion } : {}),
-					...(opts.siteTitle ? { site_title: opts.siteTitle } : {}),
-					...(opts.siteUrl ? { site_url: opts.siteUrl } : {}),
 					...(opts.userAgentVersion ? { user_agent_version: opts.userAgentVersion } : {}),
-					...(opts.userAgent ? { user_agent: opts.userAgent } : {}),
 				}
 			: {}),
 		data: {
 			id: params.invoiceId,
 			// Peppol payloads include additional data-level metadata fields
-			// (parent_id, order_provider, xml_style, view, save, save_bulk)
+			// (xml_style, view, save, save_bulk)
 			...(variant === 'peppol'
 				? {
-						parent_id: opts.parentId || null,
-						order_provider: opts.orderProvider || '',
 						xml_style: '',
 						view: false,
 						save: false,
@@ -142,7 +122,6 @@ export function buildInvoicePayload(
 			nature: opts.nature || '',
 			ref_normative: opts.refNormative || null,
 			vies: opts.vies ?? false,
-			vat_kind: opts.vatKind || null,
 			transmitter_data: {
 				transmitter_id: {
 					country_id: t.transmitterCountryId || 'IT',
@@ -174,11 +153,6 @@ export function buildInvoicePayload(
 					city: s.senderCity || '',
 					province_id: s.senderProvinceId || '',
 					country_id: s.senderCountry || 'IT',
-				},
-				rea_registration: {
-					office: opts.reaOffice || '',
-					number: opts.reaNumber || '',
-					liquidation_status: opts.reaLiquidationStatus || '',
 				},
 				contact: {
 					phone: s.senderPhone || '',
@@ -214,7 +188,6 @@ export function buildInvoicePayload(
 					invoice_prefix: inv.invoicePrefix || '',
 					invoice_suffix: inv.invoiceSuffix || '',
 				},
-				provident_fund: providentFund,
 				total_document_amount: params.totalAmount,
 			},
 			purchase_order_data: {
@@ -223,7 +196,18 @@ export function buildInvoicePayload(
 			},
 			connected_invoice_data: connectedInvoiceData,
 			// Map each line item from the n8n form structure to the API schema
-		order_items: items.map((item: AnyRecord) => ({
+		order_items: items.map((item: AnyRecord, index: number) => {
+			// Validate discount fields at runtime since n8n cannot enforce
+			// cross-field required constraints within fixedCollection items
+			if (variant === 'sdi' && item.discountType === 'yes') {
+				if (!item.discountPercent) {
+					throw new Error(`Order item ${index + 1}: Discount Percent is required when Discount is Yes`);
+				}
+				if (!item.discountAmount) {
+					throw new Error(`Order item ${index + 1}: Discount Amount is required when Discount is Yes`);
+				}
+			}
+			return ({
 				item_code: {
 					type: item.itemCodeType || 'INTERNO',
 					value: item.itemCodeValue || '',
@@ -233,14 +217,14 @@ export function buildInvoicePayload(
 				description: item.description || '',
 				quantity: item.quantity || '1.00',
 				unit: item.unit || 'N.',
-				discount_type: item.discountType || '',
+				discount_type: item.discountType === 'yes' ? 'SC' : '',
 				discount_percent: item.discountPercent || '',
 				discount_amount: item.discountAmount || '',
 				unit_price: item.unitPrice || '',
 				total_price: item.totalPrice || '',
 				rate: item.rate || '0.00',
 				total_tax: item.totalTax ?? 0,
-			})),
+			}); }),
 			// Payment data: payment_details uses the top-level paymentMethod selector;
 			// bank fields are populated only when MP05 (Bank Transfer) is selected
 			payment_data: {
@@ -250,9 +234,6 @@ export function buildInvoicePayload(
 				beneficiary: bank.beneficiary || '',
 				financial_institution: bank.financialInstitution || '',
 				iban: bank.iban || '',
-			},
-			overrides: {
-				bollo_force_apply: opts.bolloForceApply ?? false,
 			},
 		},
 	};

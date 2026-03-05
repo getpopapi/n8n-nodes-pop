@@ -190,20 +190,24 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							default: '',
 							description: 'Transmitter contact phone number',
 						},
-						{
-							displayName: 'Progressive',
-							name: 'progressive',
-							type: 'string',
-							default: '',
-							description: 'Progressive identifier for the transmission',
-						},
-						{
-							displayName: 'Recipient PEC',
-							name: 'recipientPec',
-							type: 'string',
-							default: '',
-							description: 'PEC (certified email) of the recipient',
-						},
+						...(operation === 'createSdiInvoiceXml'
+							? [
+									{
+										displayName: 'Progressive',
+										name: 'progressive',
+										type: 'string' as const,
+										default: '',
+										description: 'Progressive identifier for the transmission',
+									},
+									{
+										displayName: 'Recipient PEC',
+										name: 'recipientPec',
+										type: 'string' as const,
+										default: '',
+										description: 'PEC (certified email) of the recipient',
+									},
+								]
+							: []),
 						...(operation === 'createSdiInvoiceXml'
 							? [
 									{
@@ -302,55 +306,59 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							placeholder: 'CT',
 							description: 'Province abbreviation (e.g. CT, MI, RM)',
 						},
-						{
-							displayName: 'Tax Regime',
-							name: 'senderTaxRegime',
-							type: 'options',
-							options: [
-								{ name: 'RF01 - Ordinary', value: 'RF01' },
-								{ name: 'RF02 - Small Taxpayers (art.1, c.96-117, L. 244/07)', value: 'RF02' },
-								{ name: 'RF03 - New Productive Initiatives (art.13, L. 388/00)', value: 'RF03' },
-								{
-									name: 'RF04 - Agriculture and Related Activities and Fishing (artt.34 and 34-Bis, DPR 633/72)',
-									value: 'RF04',
-								},
-								{
-									name: 'RF05 - Sale of Salts and Tobacco (art.74, c.1, DPR 633/72)',
-									value: 'RF05',
-								},
-								{ name: 'RF06 - Matchstick Trade (art.74, c.1, DPR 633/72)', value: 'RF06' },
-								{ name: 'RF07 - Publishing (art.74, c.1, DPR 633/72)', value: 'RF07' },
-								{
-									name: 'RF08 - Management of Public Telephone Services (art.74, c.1, DPR 633/72)',
-									value: 'RF08',
-								},
-								{
-									name: 'RF09 - Resale of Public Transportation and Parking Documents (art.74, c.1, DPR 633/72)',
-									value: 'RF09',
-								},
-								{
-									name: 'RF10 - Entertainment, Games, and Other Activities (art.74, c.6, DPR 633/72)',
-									value: 'RF10',
-								},
-								{
-									name: 'RF11 - Travel and Tourism Agencies (art.74-Ter, DPR 633/72)',
-									value: 'RF11',
-								},
-								{ name: 'RF12 - Agritourism (art.5, c.2, L. 413/91)', value: 'RF12' },
-								{ name: 'RF13 - Door-to-Door Sales (art.25-Bis, c.6, DPR 600/73)', value: 'RF13' },
-								{
-									name: 'RF14 - Resale of Used Goods, Art Objects, Antiques, or Collectibles (art.36, DL 41/95)',
-									value: 'RF14',
-								},
-								{ name: 'RF15 - Art Auction Sales Agencies (art.40-Bis, DL 41/95)', value: 'RF15' },
-								{ name: 'RF16 - Cash VAT for P.A. (art.6, c.5, DPR 633/72)', value: 'RF16' },
-								{ name: 'RF17 - Cash VAT (Art. 32-Bis, DL 83/2012)', value: 'RF17' },
-								{ name: 'RF18 - Other', value: 'RF18' },
-								{ name: 'RF19 - Flat-Rate Regime (art.1, c.54-89, L. 190/2014)', value: 'RF19' },
-							],
-							default: 'RF01',
-							description: 'Italian tax regime code (Regime Fiscale)',
-						},
+						...(operation === 'createSdiInvoiceXml'
+							? [
+									{
+										displayName: 'Tax Regime',
+										name: 'senderTaxRegime',
+										type: 'options' as const,
+										options: [
+											{ name: 'RF01 - Ordinary', value: 'RF01' },
+											{ name: 'RF02 - Small Taxpayers (art.1, c.96-117, L. 244/07)', value: 'RF02' },
+											{ name: 'RF03 - New Productive Initiatives (art.13, L. 388/00)', value: 'RF03' },
+											{
+												name: 'RF04 - Agriculture and Related Activities and Fishing (artt.34 and 34-Bis, DPR 633/72)',
+												value: 'RF04',
+											},
+											{
+												name: 'RF05 - Sale of Salts and Tobacco (art.74, c.1, DPR 633/72)',
+												value: 'RF05',
+											},
+											{ name: 'RF06 - Matchstick Trade (art.74, c.1, DPR 633/72)', value: 'RF06' },
+											{ name: 'RF07 - Publishing (art.74, c.1, DPR 633/72)', value: 'RF07' },
+											{
+												name: 'RF08 - Management of Public Telephone Services (art.74, c.1, DPR 633/72)',
+												value: 'RF08',
+											},
+											{
+												name: 'RF09 - Resale of Public Transportation and Parking Documents (art.74, c.1, DPR 633/72)',
+												value: 'RF09',
+											},
+											{
+												name: 'RF10 - Entertainment, Games, and Other Activities (art.74, c.6, DPR 633/72)',
+												value: 'RF10',
+											},
+											{
+												name: 'RF11 - Travel and Tourism Agencies (art.74-Ter, DPR 633/72)',
+												value: 'RF11',
+											},
+											{ name: 'RF12 - Agritourism (art.5, c.2, L. 413/91)', value: 'RF12' },
+											{ name: 'RF13 - Door-to-Door Sales (art.25-Bis, c.6, DPR 600/73)', value: 'RF13' },
+											{
+												name: 'RF14 - Resale of Used Goods, Art Objects, Antiques, or Collectibles (art.36, DL 41/95)',
+												value: 'RF14',
+											},
+											{ name: 'RF15 - Art Auction Sales Agencies (art.40-Bis, DL 41/95)', value: 'RF15' },
+											{ name: 'RF16 - Cash VAT for P.A. (art.6, c.5, DPR 633/72)', value: 'RF16' },
+											{ name: 'RF17 - Cash VAT (Art. 32-Bis, DL 83/2012)', value: 'RF17' },
+											{ name: 'RF18 - Other', value: 'RF18' },
+											{ name: 'RF19 - Flat-Rate Regime (art.1, c.54-89, L. 190/2014)', value: 'RF19' },
+										],
+										default: 'RF01',
+										description: 'Italian tax regime code (Regime Fiscale)',
+									},
+								]
+							: []),
 						{
 							displayName: 'VAT Country',
 							name: 'senderCountryId',
@@ -363,7 +371,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'senderIdCode',
 							type: 'string',
 							default: '',
-							placeholder: 'IT99900088876',
+							placeholder: operation === 'createPeppolInvoiceUbl' ? 'BE0123456789' : 'IT99900088876',
 							description: 'Full VAT identification code (e.g. IT	+	VAT number)',
 						},
 						{
@@ -371,7 +379,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'senderZipCode',
 							type: 'string',
 							default: '',
-							placeholder: '95100',
+							placeholder: operation === 'createPeppolInvoiceUbl' ? '1000' : '95100',
 							description: 'Postal	/	ZIP code',
 						},
 					],
@@ -451,14 +459,18 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							placeholder: 'CT',
 							description: 'Province abbreviation (e.g. CT, MI, RM)',
 						},
-						{
-							displayName: 'Tax ID Code (Codice Fiscale)',
-							name: 'recipientTaxIdCode',
-							type: 'string',
-							default: '',
-							placeholder: 'PCCLFA75L04A494S',
-							description: 'Italian fiscal code (Codice Fiscale) of the recipient',
-						},
+						...(operation === 'createSdiInvoiceXml'
+							? [
+									{
+										displayName: 'Tax ID Code (Codice Fiscale)',
+										name: 'recipientTaxIdCode',
+										type: 'string' as const,
+										default: '',
+										placeholder: 'PCCLFA75L04A494S',
+										description: 'Italian fiscal code (Codice Fiscale) of the recipient',
+									},
+								]
+							: []),
 						{
 							displayName: 'VAT Country',
 							name: 'recipientCountryId',
@@ -471,6 +483,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'recipientIdCode',
 							type: 'string',
 							default: '',
+							placeholder: operation === 'createPeppolInvoiceUbl' ? 'BE0123456789' : '',
 							description: 'VAT identification code (leave empty for private individuals)',
 						},
 						{
@@ -478,6 +491,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'recipientZipCode',
 							type: 'string',
 							default: '',
+							placeholder: operation === 'createPeppolInvoiceUbl' ? '1000' : '',
 							description: 'Postal	/	ZIP code',
 						},
 					],
@@ -561,27 +575,35 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							required: true,
 							description: 'Item description text',
 						},
-						{
-							displayName: 'Discount Amount',
-							name: 'discountAmount',
-							type: 'string',
-							default: '',
-							description: 'Fixed discount amount',
-						},
-						{
-							displayName: 'Discount Percent',
-							name: 'discountPercent',
-							type: 'string',
-							default: '',
-							description: 'Discount percentage (e.g. 10.00)',
-						},
-						{
-							displayName: 'Discount Type',
-							name: 'discountType',
-							type: 'string',
-							default: '',
-							description: 'Discount type identifier (leave empty for no discount)',
-						},
+						...(operation === 'createSdiInvoiceXml'
+							? [
+									{
+										displayName: 'Discount',
+										name: 'discountType',
+										type: 'options' as const,
+										options: [
+											{ name: 'No', value: 'no' },
+											{ name: 'Yes', value: 'yes' },
+										],
+										default: 'no',
+										description: 'Whether this line item has a discount (SC type). If Yes, Discount Percent and Discount Amount are required.',
+									},
+									{
+										displayName: 'Discount Amount',
+										name: 'discountAmount',
+										type: 'string' as const,
+										default: '',
+										description: 'Total unit discount amount for this line — required when Discount is Yes',
+									},
+									{
+										displayName: 'Discount Percent',
+										name: 'discountPercent',
+										type: 'string' as const,
+										default: '',
+										description: 'Discount percentage (e.g. 10.00) — required when Discount is Yes',
+									},
+								]
+							: []),
 						{
 							displayName: 'Gift Product',
 							name: 'giftProduct',
@@ -629,10 +651,6 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 								{
 									name: 'Fee',
 									value: 'fee',
-								},
-								{
-									name: 'Discount',
-									value: 'discount',
 								},
 							],
 							default: 'product',
@@ -732,9 +750,9 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'termsPayment',
 							type: 'options',
 							options: [
-								{ name: 'TP01 - Lump Sum', value: 'TP01' },
-								{ name: 'TP02 - Installments', value: 'TP02' },
-								{ name: 'TP03 - Advance', value: 'TP03' },
+								{ name: 'TP01 - Pagamento a Rate', value: 'TP01' },
+								{ name: 'TP02 - Pagamento Completo', value: 'TP02' },
+								{ name: 'TP03 - Anticipo', value: 'TP03' },
 							],
 							default: 'TP02',
 							description: 'Payment terms type code',
@@ -818,46 +836,11 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					description: 'Document type string (e.g. invoice, credit_note)',
 				},
 				{
-					displayName: 'Force Apply Bollo',
-					name: 'bolloForceApply',
-					type: 'boolean',
-					default: false,
-					description: 'Whether to force apply the bollo (stamp duty)',
-				},
-				{
 					displayName: 'Nature (Natura)',
 					name: 'nature',
 					type: 'string',
 					default: '',
 					description: 'Nature code for VAT exempt operations (e.g. N1, N2, N3, N4)',
-				},
-				{
-					displayName: 'Order Provider',
-					name: 'orderProvider',
-					type: 'string',
-					default: '',
-					description: 'Source system (e.g. woocommerce, shopify)',
-				},
-				{
-					displayName: 'Parent ID',
-					name: 'parentId',
-					type: 'number',
-					default: 0,
-					description: 'Parent order/invoice ID (for linked documents)',
-				},
-				{
-					displayName: 'Plugin Version',
-					name: 'pluginVersion',
-					type: 'string',
-					default: '',
-					description: 'Plugin version string (used by Peppol integrations)',
-				},
-				{
-					displayName: 'Provident Fund (JSON)',
-					name: 'providentFund',
-					type: 'json',
-					default: '[]',
-					description: 'Provident fund entries as a JSON array',
 				},
 				{
 					displayName: 'Purchase Order Date',
@@ -875,27 +858,6 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					description: 'Reference to the related purchase order',
 				},
 				{
-					displayName: 'REA Liquidation Status',
-					name: 'reaLiquidationStatus',
-					type: 'string',
-					default: '',
-					description: 'Liquidation status from REA registration',
-				},
-				{
-					displayName: 'REA Number',
-					name: 'reaNumber',
-					type: 'string',
-					default: '',
-					description: 'REA registration number',
-				},
-				{
-					displayName: 'REA Office',
-					name: 'reaOffice',
-					type: 'string',
-					default: '',
-					description: 'REA registration office (for Italian companies)',
-				},
-				{
 					displayName: 'Reference Normative',
 					name: 'refNormative',
 					type: 'string',
@@ -903,24 +865,10 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					description: 'Normative reference text for VAT exempt operations',
 				},
 				{
-					displayName: 'Site Title',
-					name: 'siteTitle',
-					type: 'string',
-					default: '',
-					description: 'Title of the originating site',
-				},
-				{
-					displayName: 'Site URL',
-					name: 'siteUrl',
-					type: 'string',
-					default: '',
-					description: 'URL of the originating site',
-				},
-				{
 					displayName: 'User Agent',
 					name: 'userAgent',
 					type: 'string',
-					default: '',
+					default: 'api',
 					description: 'User agent identifier (e.g. wordpress)',
 				},
 				{
@@ -929,13 +877,6 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					type: 'string',
 					default: '',
 					description: 'User agent version string',
-				},
-				{
-					displayName: 'VAT Kind',
-					name: 'vatKind',
-					type: 'string',
-					default: '',
-					description: 'VAT kind identifier',
 				},
 				{
 					displayName: 'Version',
