@@ -527,9 +527,15 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 						{
 							displayName: 'Currency',
 							name: 'currency',
-							type: 'string',
+							type: 'options',
+							options: [
+								{
+									name: 'EUR',
+									value: 'EUR',
+								},
+							],
 							default: 'EUR',
-							description: 'ISO 4217 currency code',
+							description: 'ISO 4217 currency code (Italian invoices require EUR)',
 						},
 						{
 							displayName: 'Invoice Prefix',
