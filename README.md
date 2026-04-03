@@ -29,6 +29,8 @@ This node lets you create, send, and track electronic invoices directly from n8n
 
 ---
 
+---
+
 ## Installation
 
 Follow the [n8n community nodes installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
@@ -94,6 +96,33 @@ Retrieves a Peppol document by integration UUID.
 - **Form payload:** `{ license_key, integration: { uuid, zone? } }`
 - The `zone` field (e.g. `"BE"`) is required for Belgian VAT numbers; it is normalised to uppercase automatically
 - **Input modes:** Passthrough, Form Fields, JSON, Raw
+
+#### Verify SdI Document (XML)
+
+Validates an SdI XML document via the POP API document-verify endpoint. Designed to be used immediately after **Create SdI Invoice (XML)** in a workflow — it reads the XML from the incoming item, base64-encodes it, and auto-detects the license key from the upstream node.
+
+- **Endpoint:** `POST /sdi-via-pop/document-verify`
+- **Input:** Always passthrough — connects directly to the output of the **Create SdI Invoice (XML)** node
+- **License key:** Auto-detected from the upstream POP node (supports both Form Fields and JSON input modes of the upstream node). No manual entry required.
+- **Payload sent:** `{ license_key, skip_business_check: true, integration: { xml: "<base64-encoded XML>" } }`
+
+---
+
+### Resource: VAT Validation
+
+#### Validate VAT
+
+Validates a VAT number against the official **EU VIES** (VAT Information Exchange System) SOAP service.
+
+- **Service:** `https://ec.europa.eu/taxation_customs/vies/services/checkVatService`
+- **Supported countries:** All 27 EU member states + Northern Ireland (`XI`)
+- **Retry logic:** Up to 5 attempts with exponential backoff (1s, 2s, 4s, 8s…) when the VIES service is temporarily unavailable
+- **Returns:** `valid` (boolean), `name`, `address`, `requestDate`, `attempts` (number of retries), `latencyMs`
+
+| Field          | Description                                    |
+|----------------|------------------------------------------------|
+| Country Code   | EU country code from dropdown (e.g. `IT`, `DE`, `EL`, `XI`) |
+| VAT Number     | VAT number without the country prefix (e.g. `01234567890`) |
 
 ---
 
@@ -257,14 +286,27 @@ Optional advanced fields available in both SDI and Peppol form modes:
 
 ## Example Workflow
 
+### E-invoice creation and verification
+
 ```
-[Webhook] → [POP: Create SdI Invoice] → [POP: Get Invoice Status] → [Slack]
+[Webhook] → [POP: Create SdI Invoice] → [POP: Verify SdI Document] → [POP: Get Invoice Status] → [Slack]
 ```
 
 1. A **Webhook** node receives order data from your e-commerce platform
 2. The **POP** node creates an SdI invoice using **Use Incoming JSON** mode — the webhook payload is forwarded as-is
-3. A second **POP** node checks the invoice status using the UUID from the previous response
-4. A **Slack** node notifies the team of the result
+3. A second **POP** node (Verify SdI Document) validates the generated XML — no configuration needed, it reads everything from the previous node
+4. A third **POP** node checks the invoice status using the UUID from the create response
+5. A **Slack** node notifies the team of the result
+
+### VAT number validation
+
+```
+[Manual Trigger] → [POP: Validate VAT] → [IF: valid?] → [Send Invoice / Flag for review]
+```
+
+1. Trigger with a customer's country code and VAT number
+2. The **POP** node (VAT Validation resource) calls the EU VIES service and returns validity, company name, and address
+3. Branch on the `valid` field to decide whether to proceed with invoicing
 
 ---
 
@@ -471,6 +513,39 @@ Optional advanced fields available in both SDI and Peppol form modes:
 }
 ```
 
+### Verify SdI Document — `POST /sdi-via-pop/document-verify`
+
+> This operation has no manual payload — it is always passthrough. The node reads the XML from the incoming item (output of **Create SdI Invoice (XML)**), base64-encodes it, and auto-detects the license key from the upstream node.
+
+The request sent to the API looks like:
+
+```json
+{
+  "license_key": "<auto-detected from upstream node>",
+  "skip_business_check": true,
+  "integration": {
+    "xml": "<base64-encoded FatturaPA XML>"
+  }
+}
+```
+
+### Validate VAT (VIES)
+
+> This operation calls the EU VIES SOAP service, not the POP API.
+
+Example response:
+
+```json
+{
+  "valid": true,
+  "name": "GOOGLE ITALY S.R.L.",
+  "address": "VIA FEDERICO CONFALONIERI 4\n20124 MILANO MI",
+  "requestDate": "2026-04-02",
+  "attempts": 1,
+  "latencyMs": 412
+}
+```
+
 ---
 
 ## Project Structure
@@ -484,14 +559,18 @@ n8n-nodes-pop/
 │   ├── router.ts                    # Per-item operation dispatcher
 │   ├── types/pop.ts                 # TypeScript resource/operation type map
 │   ├── utils/request.ts             # Shared HTTP helper (base URL + error wrapping)
-│   └── invoices/
-│       ├── index.ts                 # Operation aggregator for the invoices resource
-│       ├── invoiceFields.ts         # Form field factory (shared by SdI and Peppol)
-│       ├── invoicePayloadBuilder.ts # Assembles API payloads from form values
-│       ├── createSdiInvoiceXml.ts   # Operation: Create SdI Invoice
-│       ├── createPeppolInvoiceUbl.ts# Operation: Create Peppol Invoice
-│       ├── getInvoiceStatus.ts      # Operation: Get Invoice Status
-│       └── getPeppolDocument.ts     # Operation: Get Peppol Document
+│   ├── invoices/
+│   │   ├── index.ts                 # Operation aggregator for the invoices resource
+│   │   ├── invoiceFields.ts         # Form field factory (shared by SdI and Peppol)
+│   │   ├── invoicePayloadBuilder.ts # Assembles API payloads from form values
+│   │   ├── createSdiInvoiceXml.ts   # Operation: Create SdI Invoice
+│   │   ├── createPeppolInvoiceUbl.ts# Operation: Create Peppol Invoice
+│   │   ├── getInvoiceStatus.ts      # Operation: Get Invoice Status
+│   │   ├── getPeppolDocument.ts     # Operation: Get Peppol Document
+│   │   └── verifySdiDocument.ts     # Operation: Verify SdI Document (XML)
+│   └── vies/
+│       ├── index.ts                 # Operation aggregator for the vies resource
+│       └── validateVat.ts           # Operation: Validate VAT (EU VIES SOAP)
 ├── package.json
 ├── tsconfig.json
 └── eslint.config.mjs

@@ -22,10 +22,12 @@ import {
 } from 'n8n-workflow';
 import { PopAllEntities, PopMap } from './types/pop';
 import { invoices } from './invoices';
+import { vies } from './vies';
 
 // Resource → operation module map. Add new resources here as they are implemented.
 const config = {
 	invoices,
+	vies,
 };
 
 /**
@@ -41,7 +43,8 @@ export async function router(this: IExecuteFunctions) {
 			// Determine which resource and operation the user selected
 			const resource = this.getNodeParameter<PopAllEntities>('resource', itemIndex);
 			const operationName = this.getNodeParameter('operation', itemIndex) as PopMap[typeof resource];
-			const operation = config[resource][operationName];
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const operation = (config[resource] as any)[operationName];
 
 			// Extract all declared properties for this operation.
 			// Each property is read from the node parameters and coerced

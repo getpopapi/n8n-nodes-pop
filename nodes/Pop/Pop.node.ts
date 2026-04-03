@@ -23,6 +23,7 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 
 import { router } from './router';
 import * as invoices from './invoices';
+import * as vies from './vies';
 
 export class Pop implements INodeType {
 	description: INodeTypeDescription = {
@@ -42,7 +43,7 @@ export class Pop implements INodeType {
 		// Allow this node to be used as an AI tool in n8n Agent workflows
 		usableAsTool: true,
 		// Merge all resource/operation properties from each resource module
-		properties: [...invoices.properties],
+		properties: [...invoices.properties, ...vies.properties],
 	};
 
 	/**

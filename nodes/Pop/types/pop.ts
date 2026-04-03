@@ -16,7 +16,8 @@ import { AllEntities, Entity, PropertiesOf } from 'n8n-workflow';
  * Each key is a resource name; its value is a readonly tuple of operation identifiers.
  */
 export const popMap = {
-	invoices: ['createSdiInvoiceXml', 'createPeppolInvoiceUbl', 'getInvoiceStatus', 'getPeppolDocument'],
+	invoices: ['createSdiInvoiceXml', 'createPeppolInvoiceUbl', 'getInvoiceStatus', 'getPeppolDocument', 'verifySdiDocument'],
+	vies: ['validateVat'],
 } as const;
 
 /** Typed map: resource key → union of its operation strings */
@@ -32,3 +33,9 @@ export type InvoicesEntity = Entity<PopMap, 'invoices'>;
 
 /** Properties array type for invoices operations */
 export type InvoicesProperties = PropertiesOf<InvoicesEntity>;
+
+/** Entity type for the vies resource — used to type operation properties */
+export type ViesEntity = Entity<PopMap, 'vies'>;
+
+/** Properties array type for vies operations */
+export type ViesProperties = PropertiesOf<ViesEntity>;

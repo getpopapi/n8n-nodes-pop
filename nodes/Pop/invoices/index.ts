@@ -23,13 +23,14 @@ import * as createSdiInvoiceXml from './createSdiInvoiceXml';
 import * as createPeppolInvoiceUbl from './createPeppolInvoiceUbl';
 import * as getInvoiceStatus from './getInvoiceStatus';
 import * as getPeppolDocument from './getPeppolDocument';
+import * as verifySdiDocument from './verifySdiDocument';
 
 /**
  * Combined properties array for the invoices resource.
  * Includes the resource/operation selectors and all operation-specific fields.
  */
 export const properties: INodeProperties[] = [
-	// Resource selector — currently only "Invoice" is available
+	// Resource selector — add new resources here as they are implemented
 	{
 		displayName: 'Resource',
 		name: 'resource',
@@ -39,6 +40,10 @@ export const properties: INodeProperties[] = [
 			{
 				name: 'Invoice',
 				value: 'invoices',
+			},
+			{
+				name: 'VAT Validation',
+				value: 'vies',
 			},
 		],
 		default: 'invoices',
@@ -59,6 +64,7 @@ export const properties: INodeProperties[] = [
 			createPeppolInvoiceUbl.options,
 			getInvoiceStatus.options,
 			getPeppolDocument.options,
+			verifySdiDocument.options,
 		],
 		default: '',
 	},
@@ -67,6 +73,7 @@ export const properties: INodeProperties[] = [
 	...createPeppolInvoiceUbl.properties,
 	...getInvoiceStatus.properties,
 	...getPeppolDocument.properties,
+	...verifySdiDocument.properties,
 ];
 
 /**
@@ -78,4 +85,5 @@ export const invoices = {
 	createPeppolInvoiceUbl,
 	getInvoiceStatus,
 	getPeppolDocument,
+	verifySdiDocument,
 };
