@@ -616,12 +616,29 @@ Open [http://localhost:5678](http://localhost:5678), search for **POP** in the n
 
 ## Publishing
 
+From **May 1st, 2026**, nodes submitted for verification in the n8n Creator Portal must be published from **GitHub Actions** with npm **provenance** (not from a local machine).
+
+This repository now includes `.github/workflows/publish.yml`, which publishes on version tag pushes (`*.*.*`).
+
+### One-time setup (npm)
+
+1. Open your package on npmjs.com → **Settings**
+2. Under **Publish access → Trusted Publishers**, add a publisher:
+   - **Provider:** GitHub Actions
+   - **Repository owner:** your GitHub org/user
+   - **Repository name:** this repository
+   - **Workflow name:** `publish.yml`
+3. Leave `NPM_TOKEN` empty to use OIDC Trusted Publishing (recommended)
+
+> Fallback: if you can't use Trusted Publishing yet, add a granular npm token as a GitHub secret named `NPM_TOKEN`.
+
+### Release flow
+
 ```bash
-npm login        # Log in to your npm account
-npm run release  # Builds, versions, and publishes via @n8n/node-cli
+npm run release
 ```
 
-> From **May 1st, 2026**, all community nodes must be published via a GitHub Action that includes a provenance statement. See the [n8n community node publishing guide](https://docs.n8n.io/integrations/community-nodes/build-community-nodes/) for details.
+`npm run release` bumps version/changelog, creates the Git tag, and pushes it. The `publish.yml` workflow then runs in GitHub Actions and publishes to npm with provenance.
 
 ---
 
