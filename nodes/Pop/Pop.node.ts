@@ -48,8 +48,9 @@ export class Pop implements INodeType {
 
 	/**
 	 * Main execution method called by n8n for each workflow run.
-	 * Delegates to the router which handles per-item dispatching.
+	 * Delegates to the router which handles per-item dispatching and continueOnFail.
 	 */
+	// eslint-disable-next-line @n8n/community-nodes/require-continue-on-fail
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		return await router.call(this);
 	}
