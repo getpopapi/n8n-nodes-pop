@@ -2,7 +2,7 @@
   "name": "@babinimazzari/n8n-nodes-pop",
   "version": "0.1.0",
   "description": "n8n community node for POP Cloud API (v2) — Italian SdI and Peppol e-invoicing",
-  "homepage": "https://github.com/babinimazzari/n8n-nodes-pop#readme",
+  "homepage": "https://github.com/getpopapi/pop-n8n-nodes#readme",
   "license": "MIT",
   "keywords": [
     "n8n-community-node-package",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/babinimazzari/n8n-nodes-pop.git"
+    "url": "git+https://github.com/getpopapi/pop-n8n-nodes.git"
   },
   "scripts": {
     "build": "n8n-node build",
