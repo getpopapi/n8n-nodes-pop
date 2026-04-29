@@ -17,7 +17,7 @@ It follows the same architecture as the Musixmatch reference repo:
 - **verifySdiDocument** — `POST /sdi-via-pop/document-verify` — validates an SdI XML document (passthrough-only: reads XML from the incoming item produced by createSdiInvoiceXml, base64-encodes it, and auto-detects the license key from the upstream node's parameters)
 
 ### `vies` resource
-- **validateVat** — validates a VAT number against the EU VIES SOAP service (`https://ec.europa.eu/taxation_customs/vies/services/checkVatService`). Includes retry logic (5 attempts, exponential backoff up to 30s), 28-country EU dropdown (EL for Greece, XI for Northern Ireland), and returns `valid`, `name`, `address`, `requestDate`, `attempts`, `latencyMs`.
+- **validateVat** — validates a VAT number against the EU VIES SOAP service (`https://ec.europa.eu/taxation_customs/vies/services/checkVatService`). Includes retry logic (5 attempts, no delay between retries — `setTimeout` is banned by the n8n scanner's `no-restricted-globals` rule), 28-country EU dropdown (EL for Greece, XI for Northern Ireland), and returns `valid`, `name`, `address`, `requestDate`, `attempts`, `latencyMs`.
 
 ## Authentication
 
@@ -32,11 +32,9 @@ The n8n node ships an optional `popApi` credential (`credentials/PopApi.credenti
 
 The form License Key field is **not required** — leaving it empty makes the operation use the credential. This is intentional UX so users don't re-type their key on every operation.
 
-### Credential test is intentionally NOT defined
+### Credential test
 
-`PopApi.credentials.ts` has no `test: ICredentialTestRequest`. The lint rule `@n8n/community-nodes/credential-test-required` is suppressed at the top of the file with an eslint-disable comment. **Do not re-add a `test` block.**
-
-Why: n8n auto-runs the test request whenever the credential is saved. POP API has no dedicated validation endpoint, and reusing a real route (e.g. `document-notifications` with a dummy UUID) returns a non-2xx for invalid input even when auth is fine, which makes the credential save dialog show "Couldn't connect with these settings" for valid keys. Validity is verified at first-use time by any operation that calls the API.
+`PopApi.credentials.ts` defines `test: ICredentialTestRequest` pointing to `GET /account-profile` (`https://popapi.io/wp-json/api/v2/account-profile`). This endpoint was added to the POP API specifically to support credential validation — it returns `{ success: true, data: { authenticated: true, ... } }` for valid keys and a non-2xx for invalid ones. The `authenticate` block injects `X-API-Key` automatically so no extra header setup is needed in the test.
 
 ## Development commands
 
@@ -67,10 +65,18 @@ Package is published on npm as `@getpopapi/n8n-nodes-pop`.
 
 ### Release flow (tag-driven)
 
+`npm version patch` is unreliable in this environment (WSL2 git issues with auto-tagging). Always bump manually:
+
 ```bash
-npm version patch        # or minor/major — bumps package.json + creates commit + tag
-git push --follow-tags
+# 1. Edit package.json version field manually (e.g. 0.1.2 → 0.1.3)
+git add package.json package-lock.json
+git commit -m "chore: bump version to X.Y.Z"
+git tag vX.Y.Z
+git push origin main
+git push origin vX.Y.Z
 ```
+
+If the tag already exists on remote (e.g. after a botched attempt), use `git push origin vX.Y.Z --force` to move it.
 
 Pushing a `v*` tag triggers `.github/workflows/publish.yml`, which runs `npm ci → lint → build → npm publish --provenance --access public`.
 
@@ -103,11 +109,11 @@ The published package is not auto-discovered — each n8n instance must install 
 ## Notes
 
 - Requests use `this.helpers.httpRequest()` (plain, unauthenticated transport). The `X-API-Key` header is set explicitly by handlers (form-mode override) or auto-injected from the optional `popApi` credential by `popRequest` itself — see the [Authentication](#authentication) section.
-- The **Base URL** is configured per-operation via a node input field. It defaults to `https://staging7.popapi.io/wp-json/api/v2/`. Users can override it per workflow.
+- The **Environment** selector on each invoice operation defaults to **Production** (`https://popapi.io/wp-json/api/v2/`). The Staging option is commented out in source for local testing only.
 - `n8n-workflow` is installed as a `devDependency` (not only a peerDependency) so TypeScript can resolve its types during the build.
 - The `tsconfig.json` lib list (`es2019`, `es2020`, `es2022.error`) includes neither DOM nor Node.js types. Global Node.js APIs used in operation files must be declared inline:
-  - `declare function setTimeout(callback: () => void, ms: number): number;` — in `vies/validateVat.ts`
   - `declare const Buffer: { from(data: string, encoding?: string): { toString(encoding: string): string }; };` — in `invoices/verifySdiDocument.ts`
+  - **Do not use `setTimeout` or `globalThis`** — both are banned by the n8n scanner's `@n8n/community-nodes/no-restricted-globals` ESLint rule. The `sleep()` helper in `vies/validateVat.ts` is a no-op (`Promise.resolve()`) for this reason.
 - In `router.ts`, the operation lookup must cast to `any` — `(config[resource] as any)[operationName]` — because `operationName` is a union of all operations across all resources and TypeScript cannot index a single resource's map with it.
 - The operation selector's `default` must be `''` (empty string), not a specific operation value, or the n8n lint rule `node-param-default-wrong-for-options` will fail.
 - `scripts/dev.js` (custom replacement for `n8n-node dev` that pins the n8n version) must `fs.mkdirSync(path.dirname(symlinkPath), { recursive: true })` before `fs.symlinkSync`. For scoped packages, the symlink target lives under `<n8n-user-folder>/.n8n/custom/node_modules/<scope>/<name>`; without the parent-mkdir, `npm run dev` fails with `ENOENT: no such file or directory, symlink '<cwd>' -> '<...>/<scope>/<name>'` the first time you change npm scope. After a scope rename also delete the stale `<old-scope>/` folder under that path so n8n doesn't load the same node twice under two names.
