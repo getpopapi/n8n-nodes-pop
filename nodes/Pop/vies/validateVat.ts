@@ -14,10 +14,6 @@ import type { IExecuteFunctions, INodePropertyOptions } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { ViesProperties } from '../types/pop';
 
-// Node.js runtime provides setTimeout globally; declare minimal types since
-// @types/node is not installed and the tsconfig lib list omits DOM.
-declare function setTimeout(callback: () => void, ms: number): number;
-
 /** Operation metadata shown in the n8n operation selector dropdown */
 export const options: INodePropertyOptions = {
 	name: 'Validate VAT Number',
@@ -96,8 +92,8 @@ export const properties: ViesProperties = [
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
 
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(): Promise<void> {
+	return Promise.resolve();
 }
 
 /**
@@ -206,8 +202,7 @@ export async function handler(
 			// Retryable fault: back off and try again (unless we've exhausted attempts)
 			if (parsed.fault && RETRYABLE_FAULTS.some((k) => parsed.fault!.includes(k))) {
 				if (attempt < MAX_ATTEMPTS) {
-					const delay = Math.round(600 * 2 ** (attempt - 1) + Math.random() * 300);
-					await sleep(delay);
+						await sleep();
 					continue;
 				}
 				// Exhausted retries for a retryable fault
@@ -241,8 +236,7 @@ export async function handler(
 
 			// Network or timeout error — retry with backoff
 			if (attempt < MAX_ATTEMPTS) {
-				const delay = Math.round(500 * 2 ** (attempt - 1) + Math.random() * 300);
-				await sleep(delay);
+					await sleep();
 				continue;
 			}
 

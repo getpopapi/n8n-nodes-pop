@@ -81,6 +81,16 @@ If you operate your own POP Cloud API deployment, make sure it includes the auth
 
 ---
 
+## Configuration
+
+### Environment
+
+Each invoice operation includes an **Environment** selector. The published node exposes only **Production** (`https://popapi.io/wp-json/api/v2/`).
+
+> **Note for developers:** The Staging option (`https://staging7.popapi.io/wp-json/api/v2/`) is commented out in the source and can be re-enabled locally for testing against a staging deployment.
+
+---
+
 ## Operations
 
 ### Resource: Invoice

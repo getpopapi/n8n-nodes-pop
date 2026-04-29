@@ -35,10 +35,10 @@ export const properties: InvoicesProperties = [
 		name: 'baseUrl',
 		type: 'options',
 		options: [
-			{ name: 'Staging', value: 'staging' },
+			// { name: 'Staging', value: 'staging' },
 			{ name: 'Production', value: 'production' },
 		],
-		default: 'staging',
+		default: 'production',
 		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION] } },
 		description: 'The POP API environment to use',
 	},

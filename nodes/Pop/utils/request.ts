@@ -10,8 +10,8 @@
  * - Base URL resolved from the caller-supplied value or the built-in default
  * - Rich error messages with URL, HTTP status, and response body excerpt
  *
- * The base URL can be set per-action via the "Base URL" input field on each
- * operation. When left at its default value the staging environment is used.
+ * The base URL can be set per-action via the "Environment" selector on each
+ * operation. Defaults to the production environment.
  */
 import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
@@ -24,7 +24,7 @@ const BASE_URLS: Record<string, string> = {
 	production: 'https://popapi.io/wp-json/api/v2/',
 };
 
-const DEFAULT_BASE_URL = BASE_URLS.staging;
+const DEFAULT_BASE_URL = BASE_URLS.production;
 
 /**
  * Reads the `popApi` credential's license key, if configured.
@@ -49,7 +49,7 @@ export async function getPopApiKey(
  * Sends an HTTP request to the POP API and wraps errors with diagnostic info.
  *
  * @param options - Standard n8n HTTP request options (url, method, body, headers, etc.)
- * @param baseUrl - Optional base URL override. Falls back to the default staging URL.
+ * @param baseUrl - Optional base URL override. Falls back to the production URL.
  * @returns The parsed API response
  * @throws NodeOperationError with diagnostic details on failure
  */
