@@ -738,9 +738,9 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 							name: 'termsPayment',
 							type: 'options',
 							options: [
-								{ name: 'TP01 - Pagamento a Rate', value: 'TP01' },
-								{ name: 'TP02 - Pagamento Completo', value: 'TP02' },
-								{ name: 'TP03 - Anticipo', value: 'TP03' },
+								{ name: 'TP01 - Instalment', value: 'TP01' },
+								{ name: 'TP02 - Full Payment', value: 'TP02' },
+								{ name: 'TP03 - Advance', value: 'TP03' },
 							],
 							default: 'TP02',
 							description: 'Payment terms type code',

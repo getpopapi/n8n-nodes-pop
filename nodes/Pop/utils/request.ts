@@ -13,8 +13,8 @@
  * The base URL can be set per-action via the "Environment" selector on each
  * operation. Defaults to the production environment.
  */
-import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions, JsonObject } from 'n8n-workflow';
+import { NodeApiError } from 'n8n-workflow';
 
 /** Re-export for convenience so operation files don't need to import from n8n-workflow */
 export type PopRequestOptions = IHttpRequestOptions;
@@ -74,25 +74,6 @@ export async function popRequest(
 		}
 	}
 
-	const computeFinalUrl = (base: string, path: string | undefined) => {
-		const baseTrim = base.endsWith('/') ? base : base + '/';
-		const pathTrim = (path ?? '').replace(/^\//, '');
-		return baseTrim + pathTrim;
-	};
-
-	const extractErrorDetails = (error: unknown) => {
-		const out: { status?: number; data?: unknown } = {};
-		if (typeof error === 'object' && error !== null) {
-			const resp = (error as { response?: unknown }).response;
-			if (typeof resp === 'object' && resp !== null) {
-				const maybeStatus = (resp as { status?: unknown }).status;
-				if (typeof maybeStatus === 'number') out.status = maybeStatus;
-				out.data = (resp as { data?: unknown }).data;
-			}
-		}
-		return out;
-	};
-
 	try {
 		return await this.helpers.httpRequest({
 			baseURL: resolvedBaseUrl,
@@ -100,14 +81,6 @@ export async function popRequest(
 			...options,
 		});
 	} catch (error) {
-		const finalUrl = computeFinalUrl(resolvedBaseUrl, options.url);
-		const method = (options.method || 'GET').toUpperCase();
-		const { status, data } = extractErrorDetails(error);
-		const detail = status ? ` status ${status}` : '';
-		const bodySnippet = data ? ` response: ${JSON.stringify(data).slice(0, 500)}` : '';
-		throw new NodeOperationError(
-			this.getNode(),
-			`POP request failed ${method} ${finalUrl}${detail}. ${(error as Error).message}${bodySnippet}`,
-		);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }

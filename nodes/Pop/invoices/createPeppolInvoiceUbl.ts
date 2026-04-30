@@ -58,9 +58,9 @@ export const properties: InvoicesProperties = [
 		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION] } },
 		description: 'Relative path of the POP endpoint. Adjust if your API uses a different route.',
 	},
-	// Invio Fattura toggle — controls whether the Peppol integration object is included
+	// Send Invoice toggle — controls whether the Peppol integration object is included
 	{
-		displayName: 'Invio Fattura',
+		displayName: 'Send Invoice',
 		name: 'invioFattura',
 		type: 'options',
 		options: [
