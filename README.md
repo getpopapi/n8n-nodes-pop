@@ -4,11 +4,11 @@
 ![License](https://img.shields.io/badge/license-MIT-a8dadc?style=flat-square)
 ![n8n community](https://img.shields.io/badge/n8n-community_node-1a1a1a?style=flat-square)
 
-> Community node for [n8n](https://n8n.io/) that integrates with the [POP Cloud API](https://popapi.io/) for automated electronic invoicing.
+> Community node for [n8n](https://n8n.io/) that integrates with **[POP](https://popapi.io/)** for automated electronic invoicing.
 
 **POP** is an e-invoicing platform that automates the generation, delivery, and management of legally compliant electronic invoices. It supports both the **Italian SdI** (Sistema di Interscambio / FatturaPA) and the **European Peppol** network.
 
-This node lets you create, send, and track electronic invoices directly from n8n workflows. Authenticate once with a **POP API credential** (sent as the `X-API-Key` header) or supply the license key per operation — both are supported.
+This node lets you create, send, and track electronic invoices directly from n8n workflows. Authenticate once with a **POP credential** (sent as the `X-API-Key` header) or supply the license key per operation — both are supported.
 
 ---
 
@@ -17,6 +17,7 @@ This node lets you create, send, and track electronic invoices directly from n8n
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Authentication](#authentication)
+  - [Get Your License Key](#get-your-license-key)
 - [Operations](#operations)
 - [Input Modes](#input-modes)
 - [Form Fields Reference](#form-fields-reference)
@@ -27,8 +28,6 @@ This node lets you create, send, and track electronic invoices directly from n8n
 - [Publishing](#publishing)
 - [Resources](#resources)
 - [License](#license)
-
----
 
 ---
 
@@ -45,20 +44,48 @@ Follow the [n8n community nodes installation guide](https://docs.n8n.io/integrat
 
 ## Authentication
 
-The POP Cloud API (v2) accepts the license key in **two** forms:
+### Get Your License Key
+
+> 🔑 **New to POP?** Visit **[popapi.io](https://popapi.io/)** to create your account and get your license key.
+
+API-only users can activate their account and obtain a `license_key` with this flow:
+
+1. Open **[https://popapi.io/otp-login/](https://popapi.io/otp-login/)**
+2. Enter your email address
+3. Receive a one-time password (OTP) by email and enter it
+4. Complete the configuration wizard
+5. Open **[https://popapi.io/](https://popapi.io/)** → **Account > API**
+6. Copy the default generated `license_key`
+
+**Key management:**
+- Your account includes one default `license_key`, visible under **Account > API**
+- You can generate additional keys linked to the same account from that same page
+- Every `license_key` must be treated as a secret credential — do not commit it to source control
+
+**Recommended first steps:**
+1. Get your `license_key`
+2. Test it with `GET /account-profile`
+3. Send one document-generation request with a real payload
+4. Add optional delivery integrations only after local generation works
+
+---
+
+### How the credential is sent
+
+POP (v2) accepts the license key in **two** forms:
 
 | Method                       | How                                                  | Status                  |
 |------------------------------|------------------------------------------------------|-------------------------|
 | **`X-API-Key` HTTP header**  | `X-API-Key: <your_license_key>`                      | **Preferred**           |
 | **`license_key` body param** | `{ "license_key": "<your_license_key>", ... }`       | Legacy fallback         |
 
-When both are present, the header wins. The body fallback exists so older POP API deployments continue to work without changes.
+When both are present, the header wins. The body fallback exists so older POP deployments continue to work without changes.
 
 ### How to provide the key in n8n
 
 This node supports two ways of supplying the key, which can be combined:
 
-1. **POP API credential** _(recommended)_ — In n8n, go to **Credentials → New → POP API**, paste the license key, and select that credential on the POP node. The node will send `X-API-Key: <your_license_key>` on every request automatically.
+1. **POP credential** _(recommended)_ — In n8n, go to **Credentials → New → POP API**, paste the license key, and select that credential on the POP node. The node will send `X-API-Key: <your_license_key>` on every request automatically.
 2. **Per-operation License Key field** — In **Form Fields** input mode, every invoice operation exposes a **License Key** field. When non-empty it overrides the credential and is sent both as the `X-API-Key` header **and** as `license_key` in the request body. Useful when one workflow needs to drive multiple licenses.
 
 For **Use Incoming JSON**, **JSON**, and **Raw** input modes the credential is the simplest option — the header is injected automatically. You can still embed `license_key` in the body if you prefer; the API accepts both.
@@ -75,9 +102,9 @@ For **Use Incoming JSON**, **JSON**, and **Raw** input modes the credential is t
 
 The **Verify SdI Document (XML)** operation auto-detects the license key from the upstream Create SdI Invoice node — that detected key is sent both as the header and in the body, taking precedence over the credential.
 
-### Self-hosted POP API deployments
+### Self-hosted POP deployments
 
-If you operate your own POP Cloud API deployment, make sure it includes the auth-header support — see `LicenseHelper::buildLicenseInfo` and `Utils::apiPermissionCallback` in pop-cloud-api, which prefer `X-API-Key` and fall back to `license_key`. Older deployments without that change still work because this node also sends `license_key` in the body whenever it has a key to send.
+If you operate your own POP deployment, make sure it includes the auth-header support — see `LicenseHelper::buildLicenseInfo` and `Utils::apiPermissionCallback` in pop-cloud-api, which prefer `X-API-Key` and fall back to `license_key`. Older deployments without that change still work because this node also sends `license_key` in the body whenever it has a key to send.
 
 ---
 
@@ -131,7 +158,7 @@ Retrieves a Peppol document by integration UUID.
 
 #### Verify SdI Document (XML)
 
-Validates an SdI XML document via the POP API document-verify endpoint. Designed to be used immediately after **Create SdI Invoice (XML)** in a workflow — it reads the XML from the incoming item, base64-encodes it, and auto-detects the license key from the upstream node.
+Validates an SdI XML document via the POP document-verify endpoint. Designed to be used immediately after **Create SdI Invoice (XML)** in a workflow — it reads the XML from the incoming item, base64-encodes it, and auto-detects the license key from the upstream node.
 
 - **Endpoint:** `POST /sdi-via-pop/document-verify`
 - **Input:** Always passthrough — connects directly to the output of the **Create SdI Invoice (XML)** node
@@ -179,7 +206,7 @@ The **Form Fields** input mode for `Create SdI Invoice (XML)` and `Create Peppol
 
 | Field                     | SDI | Peppol | Description                                              |
 |---------------------------|:---:|:------:|----------------------------------------------------------|
-| License Key               | ✓   | ✓      | POP license key. Optional when a POP API credential is configured. When set, sent both as `X-API-Key` header and `license_key` body param. |
+| License Key               | ✓   | ✓      | POP license key. Optional when a POP credential is configured. When set, sent both as `X-API-Key` header and `license_key` body param. |
 | Invoice / Order ID `*`    | ✓   | ✓      | Numeric ID of the invoice or order                       |
 | Filename `*`              | ✓   | ✓      | FatturaPA / Peppol filename (e.g. `IT99900088876_00009`) |
 | Customer Type `*`         | ✓   | ✓      | `Private` / `Company` / `Freelance` (Peppol: no Private) |
@@ -563,7 +590,7 @@ The request sent to the API looks like:
 
 ### Validate VAT (VIES)
 
-> This operation calls the EU VIES SOAP service, not the POP API.
+> This operation calls the EU VIES SOAP service, not the POP Cloud API.
 
 Example response:
 

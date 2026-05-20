@@ -29,6 +29,7 @@ type AnyRecord = Record<string, any>;
 export interface InvoiceFormParams {
 	// Required top-level fields
 	licenseKey: string;
+	environment?: string;
 	invoiceId: number;
 	filename: string;
 	customerType: 'private' | 'business' | 'pa';
@@ -94,6 +95,7 @@ export function buildInvoicePayload(
 	const payload: AnyRecord = {
 		user_agent: opts.userAgent || 'api',
 		license_key: params.licenseKey,
+		...(params.environment ? { environment: params.environment } : {}),
 		// Peppol includes an optional top-level user_agent_version metadata field.
 		...(variant === 'peppol'
 			? {

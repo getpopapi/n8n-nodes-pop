@@ -56,6 +56,19 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 				'POP license key. Sent as the X-API-Key header and as license_key in the body for backwards compatibility. Leave empty to use the configured POP API credential.',
 		},
 		{
+			displayName: 'Target Environment',
+			name: 'environment',
+			type: 'options',
+			options: [
+				{ name: 'Default', value: '' },
+				{ name: 'Live', value: 'live' },
+				{ name: 'Sandbox', value: 'sandbox' },
+			],
+			default: '',
+			displayOptions: showForm,
+			description: 'Target environment. Sandbox does not consume credits. Leave empty to use the API default.',
+		},
+		{
 			displayName: 'Invoice / Order ID',
 			name: 'invoiceId',
 			type: 'number',

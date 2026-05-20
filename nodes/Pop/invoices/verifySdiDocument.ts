@@ -53,6 +53,19 @@ export const properties: InvoicesProperties = [
 		description: 'Relative path of the POP endpoint for document verification',
 	},
 	{
+		displayName: 'Target Environment',
+		name: 'environment',
+		type: 'options',
+		options: [
+			{ name: 'Default', value: '' },
+			{ name: 'Live', value: 'live' },
+			{ name: 'Sandbox', value: 'sandbox' },
+		],
+		default: '',
+		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION] } },
+		description: 'Target environment. Sandbox does not consume credits. Leave empty to use the API default.',
+	},
+	{
 		displayName: 'Extra Headers (JSON)',
 		name: 'headers',
 		type: 'json',
@@ -132,11 +145,12 @@ export async function handler(
 	params: {
 		baseUrl?: string;
 		path: string;
+		environment?: string;
 		headers?: Record<string, string>;
 		_itemIndex?: number;
 	},
 ): Promise<unknown> {
-	const { baseUrl, path, headers } = params;
+	const { baseUrl, path, environment, headers } = params;
 	const itemIndex = params._itemIndex ?? 0;
 
 	const incomingJson = this.getInputData()[itemIndex].json;
@@ -171,6 +185,7 @@ export async function handler(
 		body: {
 			license_key: licenseKey,
 			skip_business_check: true,
+			...(environment ? { environment } : {}),
 			integration: { xml: base64Xml },
 		},
 	};

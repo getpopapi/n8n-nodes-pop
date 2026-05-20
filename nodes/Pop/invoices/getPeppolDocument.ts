@@ -91,6 +91,19 @@ export const properties: InvoicesProperties = [
 		description:
 			'POP license key. Sent as the X-API-Key header and as license_key in the body for backwards compatibility. Leave empty to use the configured POP API credential.',
 	},
+	{
+		displayName: 'Target Environment',
+		name: 'environment',
+		type: 'options',
+		options: [
+			{ name: 'Default', value: '' },
+			{ name: 'Live', value: 'live' },
+			{ name: 'Sandbox', value: 'sandbox' },
+		],
+		default: '',
+		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION], inputMode: ['form'] } },
+		description: 'Target environment. Sandbox does not consume credits. Leave empty to use the API default.',
+	},
 	// Zone field — required for Peppol access points in certain countries (e.g. Belgium)
 	{
 		displayName: 'Zone (Country Code)',
@@ -154,6 +167,7 @@ export async function handler(
 		inputMode: 'form' | 'json' | 'raw' | 'passthrough';
 		integrationUuid?: string;
 		licenseKey?: string;
+		environment?: string;
 		zone?: string;
 		jsonBody?: object;
 		rawBody?: string;
@@ -189,6 +203,7 @@ export async function handler(
 		requestOptions.json = true;
 		requestOptions.body = {
 			license_key: params.licenseKey,
+			...(params.environment ? { environment: params.environment } : {}),
 			integration: {
 				uuid: params.integrationUuid,
 				...(zoneValue ? { zone: zoneValue } : {}),

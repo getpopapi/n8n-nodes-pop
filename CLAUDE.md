@@ -106,6 +106,25 @@ The published package is not auto-discovered — each n8n instance must install 
 - **Self-hosted:** Settings → Community Nodes → Install → `@getpopapi/n8n-nodes-pop`
 - **n8n Cloud:** requires verification via n8n's community node verification flow; unverified packages are not installable on Cloud
 
+## n8n verification — known issues fixed in v0.1.4
+
+Manual review (2026-04-30) flagged three issues, all fixed in v0.1.4:
+
+1. **`NodeOperationError` → `NodeApiError`** (`nodes/Pop/utils/request.ts`) — HTTP errors must use `throw new NodeApiError(this.getNode(), error as JsonObject)` so the n8n UI can surface URL, status code, and response body.
+2. **Italian `displayName`** — `'Invio Fattura'` renamed to `'Send Invoice'` in `createSdiInvoiceXml.ts` and `createPeppolInvoiceUbl.ts`.
+3. **Italian option names** — Payment Terms in `invoiceFields.ts` translated: `Pagamento a Rate` → `Instalment`, `Pagamento Completo` → `Full Payment`, `Anticipo` → `Advance`.
+4. **`subcategories` in `Pop.node.json`** — removed; only `node`, `nodeVersion`, `codexVersion`, `categories`, `resources`, `alias` are supported.
+
+### Potential future Italian label flags (not yet flagged, watch if review fails again)
+
+These use Italian technical terms in parentheses or descriptions — not pure Italian labels, so not flagged in v0.1.4 review, but could be flagged in a stricter pass:
+
+- `invoiceFields.ts:101` — `displayName: 'SDI Type (Codice Destinatario)'`
+- `invoiceFields.ts:465` — `displayName: 'Tax ID Code (Codice Fiscale)'`
+- `invoiceFields.ts:218` — `description: 'Codice destinatario SdI (7 characters)'`
+- `invoiceFields.ts:358` — `description: 'Italian tax regime code (Regime Fiscale)'`
+- `invoiceFields.ts:470` — `description: 'Italian fiscal code (Codice Fiscale) of the recipient'`
+
 ## Notes
 
 - Requests use `this.helpers.httpRequest()` (plain, unauthenticated transport). The `X-API-Key` header is set explicitly by handlers (form-mode override) or auto-injected from the optional `popApi` credential by `popRequest` itself — see the [Authentication](#authentication) section.

@@ -145,6 +145,7 @@ export async function handler(
 		path: string;
 		invioFattura: 'yes' | 'no';
 		inputMode: 'form' | 'json' | 'raw' | 'passthrough';
+		environment?: string;
 		jsonBody?: object;
 		rawBody?: string;
 		headers?: Record<string, string>;
