@@ -5,21 +5,26 @@
  * form parameters collected by n8n's UI. This is the core transformation
  * layer between n8n's flat parameter model and the POP API's nested JSON schema.
  *
- * The builder handles two variants:
+ * The builder handles three variants:
  * - 'sdi': Italian SdI (Sistema di Interscambio) via create-xml endpoint
  * - 'peppol': European Peppol network via create-ubl endpoint
+ * - 'zoho': POP's native Zoho connector via integration/zoho/sync endpoint
  *
  * Key differences between variants:
  * - Peppol includes extra metadata fields (xml_style, view, save, save_bulk)
  * - Peppol includes top-level user_agent_version metadata
- * - Tax regime defaults to 'RF01' for SdI, empty string for Peppol
- * - SDI type comes from a required top-level field for SdI, from additional options for Peppol
+ * - Tax regime defaults to 'RF01' for SdI, empty string for Peppol and Zoho
+ * - SDI type comes from a required top-level field for SdI, from additional options for Peppol/Zoho
+ * - Zoho requires connected_invoice_data[0].id when doc_type is TD04 (Credit Note),
+ *   enforced here since n8n form fields can't express cross-field conditional requirements
  *
- * The output matches the schemas in createXmlPayload.txt and createUblPayload.txt.
+ * The output matches the schemas in createXmlPayload.txt and createUblPayload.txt; the
+ * Zoho connector accepts the same envelope (validated server-side by
+ * ConnectorZohoPayloadBuilder::validatePayload() in pop-cloud-api).
  */
 
 /** Discriminator for which API endpoint variant to build the payload for */
-export type InvoiceVariant = 'sdi' | 'peppol';
+export type InvoiceVariant = 'sdi' | 'peppol' | 'zoho';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /** Loose record type used throughout to avoid strict typing on deeply nested API payloads */
@@ -87,6 +92,21 @@ export function buildInvoicePayload(
 					: opts.connectedInvoiceData;
 		} catch {
 			connectedInvoiceData = [];
+		}
+	}
+
+	// Zoho credit notes (TD04) require a connected invoice reference; n8n form
+	// fields can't express this cross-field constraint declaratively, so it's
+	// validated here before the request is sent.
+	if (variant === 'zoho' && (inv.docType || 'TD01') === 'TD04') {
+		const hasConnectedInvoiceId =
+			Array.isArray(connectedInvoiceData) &&
+			connectedInvoiceData.length > 0 &&
+			typeof (connectedInvoiceData[0] as AnyRecord)?.id !== 'undefined';
+		if (!hasConnectedInvoiceId) {
+			throw new Error(
+				'Connected Invoice Data with an "id" field is required when Document Type is TD04 (Credit Note)',
+			);
 		}
 	}
 

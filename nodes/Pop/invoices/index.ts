@@ -24,6 +24,7 @@ import * as createPeppolInvoiceUbl from './createPeppolInvoiceUbl';
 import * as getInvoiceStatus from './getInvoiceStatus';
 import * as getPeppolDocument from './getPeppolDocument';
 import * as verifySdiDocument from './verifySdiDocument';
+import * as syncZohoDocument from './syncZohoDocument';
 
 /**
  * Combined properties array for the invoices resource.
@@ -65,6 +66,7 @@ export const properties: INodeProperties[] = [
 			getInvoiceStatus.options,
 			getPeppolDocument.options,
 			verifySdiDocument.options,
+			syncZohoDocument.options,
 		],
 		default: '',
 	},
@@ -74,6 +76,7 @@ export const properties: INodeProperties[] = [
 	...getInvoiceStatus.properties,
 	...getPeppolDocument.properties,
 	...verifySdiDocument.properties,
+	...syncZohoDocument.properties,
 ];
 
 /**
@@ -86,4 +89,5 @@ export const invoices = {
 	getInvoiceStatus,
 	getPeppolDocument,
 	verifySdiDocument,
+	syncZohoDocument,
 };

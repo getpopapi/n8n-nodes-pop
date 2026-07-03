@@ -165,6 +165,26 @@ Validates an SdI XML document via the POP document-verify endpoint. Designed to 
 - **License key:** Auto-detected from the upstream POP node (supports both Form Fields and JSON input modes of the upstream node). No manual entry required.
 - **Payload sent:** `{ license_key, skip_business_check: true, integration: { xml: "<base64-encoded XML>" } }`
 
+#### Sync Document to Zoho
+
+Syncs an invoice or credit note to Zoho Books/Invoice via POP's native Zoho connector. All Zoho-side mapping (tax, customer, payment terms, document status) happens server-side in the POP API — this node only gates the request and forwards the payload.
+
+- **Prerequisite:** The Zoho integration must be activated for your account from the POP account panel before this action can succeed.
+- **Status check:** With **Check Connector Status First** set to `Yes` (the default), the node first calls `GET /integration/zoho/status` and confirms `data.active_connector === "zoho"` and `data.zoho_connected === true`. If the connector isn't active, the operation fails immediately with a clear error instead of attempting the sync.
+- **Sync endpoint:** `POST /integration/zoho/sync`
+- **Document Type:** Reuses the **Invoice Details → Document Type** field — `TD01` (Invoice) or `TD04` (Credit Note).
+- **Credit notes (TD04):** The POP API requires a connected invoice reference. Set **Additional Options → Connected Invoice Data (JSON)** to an array whose first entry has a numeric `id`, e.g. `[{"id": 123}]`. The node validates this locally before sending the request and fails fast if it's missing.
+- **Input modes:** Passthrough, Form Fields, JSON (no Raw — the endpoint only accepts JSON)
+- **Output shape:**
+  ```json
+  {
+    "connector_active": true,
+    "status_checked": true,
+    "sync_attempted": true,
+    "response": { "...": "raw POP API response" }
+  }
+  ```
+
 ---
 
 ### Resource: VAT Validation
@@ -187,7 +207,7 @@ Validates a VAT number against the official **EU VIES** (VAT Information Exchang
 
 ## Input Modes
 
-All four operations support the same four input modes:
+Most invoice operations support the same four input modes:
 
 | Mode                  | Description                                                                                             |
 |-----------------------|---------------------------------------------------------------------------------------------------------|
@@ -195,6 +215,8 @@ All four operations support the same four input modes:
 | **Form Fields**       | Structured form with all relevant fields. Best for manual entry or mapping from other nodes.            |
 | **JSON**              | Paste or build the full request JSON payload manually.                                                  |
 | **Raw (XML/Other)**   | Send a raw string body (e.g. XML). Sets `Content-Type: application/xml` unless overridden via headers.  |
+
+**Sync Document to Zoho** only supports **Use Incoming JSON**, **Form Fields**, and **JSON** — the `integration/zoho/sync` endpoint accepts JSON only, so **Raw** is not offered for this operation.
 
 ---
 
@@ -588,6 +610,57 @@ The request sent to the API looks like:
 }
 ```
 
+### Sync Document to Zoho — `POST /integration/zoho/sync`
+
+Invoice (TD01):
+
+```json
+{
+  "license_key": "your_license_key",
+  "data": {
+    "id": 0,
+    "filename": "",
+    "type": "invoice",
+    "customer_type": "private",
+    "transferee_client": {},
+    "invoice_body": {
+      "general_data": {
+        "doc_type": "TD01",
+        "date": "2025-01-31",
+        "currency": "EUR"
+      }
+    },
+    "order_items": [{}]
+  }
+}
+```
+
+Credit note (TD04) — requires `connected_invoice_data`:
+
+```json
+{
+  "license_key": "your_license_key",
+  "data": {
+    "id": 0,
+    "filename": "",
+    "type": "invoice",
+    "customer_type": "private",
+    "transferee_client": {},
+    "invoice_body": {
+      "general_data": {
+        "doc_type": "TD04",
+        "date": "2025-01-31",
+        "currency": "EUR"
+      }
+    },
+    "connected_invoice_data": [{ "id": 123 }],
+    "order_items": [{}]
+  }
+}
+```
+
+The status check that runs first (unless disabled) calls `GET /integration/zoho/status` with no body.
+
 ### Validate VAT (VIES)
 
 > This operation calls the EU VIES SOAP service, not the POP Cloud API.
@@ -620,13 +693,14 @@ n8n-nodes-pop/
 │   ├── utils/request.ts             # Shared HTTP helper (base URL + error wrapping)
 │   ├── invoices/
 │   │   ├── index.ts                 # Operation aggregator for the invoices resource
-│   │   ├── invoiceFields.ts         # Form field factory (shared by SdI and Peppol)
+│   │   ├── invoiceFields.ts         # Form field factory (shared by SdI, Peppol, and Zoho)
 │   │   ├── invoicePayloadBuilder.ts # Assembles API payloads from form values
 │   │   ├── createSdiInvoiceXml.ts   # Operation: Create SdI Invoice
 │   │   ├── createPeppolInvoiceUbl.ts# Operation: Create Peppol Invoice
 │   │   ├── getInvoiceStatus.ts      # Operation: Get Invoice Status
 │   │   ├── getPeppolDocument.ts     # Operation: Get Peppol Document
-│   │   └── verifySdiDocument.ts     # Operation: Verify SdI Document (XML)
+│   │   ├── verifySdiDocument.ts     # Operation: Verify SdI Document (XML)
+│   │   └── syncZohoDocument.ts      # Operation: Sync Document to Zoho
 │   └── vies/
 │       ├── index.ts                 # Operation aggregator for the vies resource
 │       └── validateVat.ts           # Operation: Validate VAT (EU VIES SOAP)

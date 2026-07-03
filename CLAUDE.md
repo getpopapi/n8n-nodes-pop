@@ -15,6 +15,7 @@ It follows the same architecture as the Musixmatch reference repo:
 - **getInvoiceStatus** — `POST /document-notifications` — retrieves SdI notification events by UUID
 - **getPeppolDocument** — `POST /peppol/document-get` — retrieves a Peppol document by UUID
 - **verifySdiDocument** — `POST /sdi-via-pop/document-verify` — validates an SdI XML document (passthrough-only: reads XML from the incoming item produced by createSdiInvoiceXml, base64-encodes it, and auto-detects the license key from the upstream node's parameters)
+- **syncZohoDocument** — `POST /integration/zoho/sync` (with optional preflight `GET /integration/zoho/status`) — syncs an invoice (TD01) or credit note (TD04) to Zoho Books/Invoice via POP's native Zoho connector. All Zoho-side mapping happens server-side in `pop-cloud-api` (`ConnectorZohoPayloadBuilder`, `classes/connector-zoho-service.php`) — this node only gates on connector status and forwards the standard POP invoice envelope. See [Sync Document to Zoho](#sync-document-to-zoho) notes below.
 
 ### `vies` resource
 - **validateVat** — validates a VAT number against the EU VIES SOAP service (`https://ec.europa.eu/taxation_customs/vies/services/checkVatService`). Includes retry logic (5 attempts, no delay between retries — `setTimeout` is banned by the n8n scanner's `no-restricted-globals` rule), 28-country EU dropdown (EL for Greece, XI for Northern Ireland), and returns `valid`, `name`, `address`, `requestDate`, `attempts`, `latencyMs`.
@@ -106,6 +107,15 @@ The published package is not auto-discovered — each n8n instance must install 
 - **Self-hosted:** Settings → Community Nodes → Install → `@getpopapi/n8n-nodes-pop`
 - **n8n Cloud:** requires verification via n8n's community node verification flow; unverified packages are not installable on Cloud
 
+## Changelog summary
+
+- **Unreleased** — Added `syncZohoDocument` operation (Invoice resource): syncs invoices/credit notes to Zoho via POP's native connector, with a connector-status preflight check and local TD04 validation. See [Sync Document to Zoho](#sync-document-to-zoho) below.
+- **v0.1.5** (2026-05-20) — New logo (clean SVG), `environment` body param on all 5 invoice operations, README overhauled (license key section + brand consistency). NPM token expired during publish — had to rotate and re-run.
+- **v0.1.4** (2026-04-30) — n8n verification fixes: NodeApiError, English labels, codex subcategories removed.
+- **v0.1.3** (2026-04-29) — Scanner fixes: no-op sleep (setTimeout banned), credential test added.
+- **v0.1.2 / v0.1.1** — Early releases under `@getpopapi` scope.
+- **v0.1.0** (2026-04-22) — First publish (wrong scope `@babinimazzari`, abandoned).
+
 ## n8n verification — known issues fixed in v0.1.4
 
 Manual review (2026-04-30) flagged three issues, all fixed in v0.1.4:
@@ -125,10 +135,23 @@ These use Italian technical terms in parentheses or descriptions — not pure It
 - `invoiceFields.ts:358` — `description: 'Italian tax regime code (Regime Fiscale)'`
 - `invoiceFields.ts:470` — `description: 'Italian fiscal code (Codice Fiscale) of the recipient'`
 
+## Sync Document to Zoho
+
+- **Backend contract (verified against `pop-cloud-api`, not assumed):** `GET /integration/zoho/status` returns `{ success, data: { active_connector, zoho_connected, zoho_region, zoho_product, zoho_org_id, zoho_token_expires_at, zoho_invoice_status, zoho_create_contact_if_missing } }`. "Connector active" = `data.active_connector === 'zoho' && data.zoho_connected === true` — this is the exact check the handler uses. `POST /integration/zoho/sync` takes the same POP envelope as SdI (`license_key`, `environment`, `data: {...}`); `ConnectorZohoPayloadBuilder::validatePayload()` (PHP) requires `invoice_body.general_data.{doc_type,date,currency}`, `transferee_client.personal_data`, non-empty `order_items[]`, and `doc_type` of `TD01` or `TD04` (`TD04` additionally requires `connected_invoice_data[0].id`).
+- **No new UI field family** — `invoicePayloadBuilder.ts` gained a third `InvoiceVariant = 'zoho'` alongside `'sdi' | 'peppol'`. The existing SdI-shaped `data` object already satisfies the Zoho validator, so no new payload structure was needed — only a runtime guard (mirrors the existing discount-percent check pattern) that throws before the request is sent if `doc_type === 'TD04'` and `connected_invoice_data[0].id` is missing.
+- **`sendInvoice` is always `false` for the `'zoho'` variant** — Zoho sync has no `integration.use`/`action` toggle like SdI/Peppol do; the handler passes `false` at the call site rather than adding a branch inside the builder's `sendInvoice` block.
+- **`Document Type` field is reused, not duplicated** — the existing `invoiceDetails.invoiceDetailValues.docType` field (`Invoice Details` fixedCollection, options `TD01`/`TD04`) already exists and is shown for `syncZohoDocument` for free, since `makeInvoiceFormFields`'s SdI-only conditionals (`sdiType`, `sdiCode`, `senderTaxRegime`, `recipientTaxIdCode`, etc.) are gated by `operation === 'createSdiInvoiceXml'` and fall through hidden for any other operation string.
+- **No Raw input mode** — the Zoho sync endpoint only accepts JSON, so `syncZohoDocument` only offers Passthrough/Form/JSON (unlike the other invoice operations, which also offer Raw).
+- **Precondition failures use `NodeOperationError`, not `NodeApiError`** — the connector-inactive check and the TD04 validation guard are client-side preconditions, not HTTP errors from `popRequest`, so they follow the existing pattern of thrown `Error`/`NodeOperationError` (see `router.ts`'s catch block) rather than the `NodeApiError` wrapping reserved for actual HTTP failures.
+- **Lint gotcha discovered while adding this operation:** the `n8n-nodes-base/node-param-description-miscased-id` and `-miscased-json` rules flag *any* standalone lowercase `id`/`json` word in a `description` string — including inside inline code examples like `{"id": 123}` or `application/json`. `npm run lint:fix` will "fix" these by uppercasing them in place, which corrupts real MIME types and JSON key names (e.g. `application/json` → `application/JSON`). Don't trust `lint:fix` blindly on description strings with embedded code snippets — reword the prose to avoid the literal words instead (e.g. "a numeric identifier" instead of "an id field").
+
 ## Notes
 
 - Requests use `this.helpers.httpRequest()` (plain, unauthenticated transport). The `X-API-Key` header is set explicitly by handlers (form-mode override) or auto-injected from the optional `popApi` credential by `popRequest` itself — see the [Authentication](#authentication) section.
-- The **Environment** selector on each invoice operation defaults to **Production** (`https://popapi.io/wp-json/api/v2/`). The Staging option is commented out in source for local testing only.
+- The **Environment** selector (`baseUrl`) on each invoice operation defaults to **Production** (`https://popapi.io/wp-json/api/v2/`). The Staging option is commented out in source for local testing only. This is separate from the **Target Environment** body field (`live` / `sandbox`) added in v0.1.5.
+- The **Target Environment** body field (`environment`) is optional on invoice operations that use the shared form-field factory or an inline equivalent (including `syncZohoDocument`, which reuses `makeInvoiceFormFields`). When set to `sandbox`, POP does not consume credits. It is defined in `invoiceFields.ts` (for form-mode create operations) and inline in each status/verify operation file. The field is passed through `InvoiceFormParams` in `invoicePayloadBuilder.ts` and conditionally spread: `...(params.environment ? { environment: params.environment } : {})`.
+- The node icon is `nodes/Pop/pop.svg` — a clean vector SVG (1400×1400 viewBox). As of v0.1.5 this is the official POP square logo. The `file:pop.svg` reference in `Pop.node.ts` does not need to change when the SVG content is updated.
+- Brand name in all user-facing text (README, descriptions) must be **POP** — never "POP API" or "POP Api". The n8n credential is named "POP API" in the UI (that specific string is kept only in `Credentials → New → POP API` UI path instructions).
 - `n8n-workflow` is installed as a `devDependency` (not only a peerDependency) so TypeScript can resolve its types during the build.
 - The `tsconfig.json` lib list (`es2019`, `es2020`, `es2022.error`) includes neither DOM nor Node.js types. Global Node.js APIs used in operation files must be declared inline:
   - `declare const Buffer: { from(data: string, encoding?: string): { toString(encoding: string): string }; };` — in `invoices/verifySdiDocument.ts`

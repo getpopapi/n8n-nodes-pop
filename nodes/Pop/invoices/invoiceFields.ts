@@ -23,8 +23,8 @@
  */
 import type { INodeProperties } from 'n8n-workflow';
 
-/** The two invoice creation operations that share these form fields */
-type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl';
+/** The invoice creation/sync operations that share these form fields */
+type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl' | 'syncZohoDocument';
 
 /**
  * Factory that returns the full set of form-mode INodeProperties
@@ -827,7 +827,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					name: 'connectedInvoiceData',
 					type: 'json',
 					default: '[]',
-					description: 'Connected invoice references as a JSON array',
+					description: 'Connected invoice references as a JSON array. Required (each entry needs a numeric identifier) when Document Type is TD04 (Credit Note) for the Sync Document to Zoho action.',
 				},
 				{
 					displayName: 'Document Type (String)',
