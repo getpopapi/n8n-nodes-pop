@@ -169,7 +169,7 @@ Validates an SdI XML document via the POP document-verify endpoint. Designed to 
 
 Syncs an invoice or credit note to Zoho Books/Invoice via POP's native Zoho connector. All Zoho-side mapping (tax, customer, payment terms, document status) happens server-side in the POP API — this node only gates the request and forwards the payload.
 
-- **Prerequisite:** The Zoho integration must be activated for your account from the POP account panel before this action can succeed.
+- **Prerequisite:** The Zoho integration must be activated for your account from the POP account panel before this action can succeed — see [Setting Up the Zoho Connector](#setting-up-the-zoho-connector-prerequisite) below.
 - **Status check:** With **Check Connector Status First** set to `Yes` (the default), the node first calls `GET /integration/zoho/status` and confirms `data.active_connector === "zoho"` and `data.zoho_connected === true`. If the connector isn't active, the operation fails immediately with a clear error instead of attempting the sync.
 - **Sync endpoint:** `POST /integration/zoho/sync`
 - **Document Type:** Reuses the **Invoice Details → Document Type** field — `TD01` (Invoice) or `TD04` (Credit Note).
@@ -184,6 +184,28 @@ Syncs an invoice or credit note to Zoho Books/Invoice via POP's native Zoho conn
     "response": { "...": "raw POP API response" }
   }
   ```
+
+#### Setting Up the Zoho Connector (Prerequisite)
+
+Before you can use **Sync Document to Zoho**, you need to connect your Zoho account to POP. This is a one-time setup done in the POP dashboard, not in n8n. Full documentation: [docs.popapi.io/en/api/zoho](https://docs.popapi.io/en/api/zoho/).
+
+1. Go to [**popapi.io/my-account/api-integrations/zoho-connector/connect**](https://popapi.io/my-account/api-integrations/zoho-connector/connect/) and log in to your POP account.
+2. **Choose the Zoho product** you actually use:
+   - **Zoho Invoice** — if your account uses Zoho Invoice.
+   - **Zoho Books** — if your account uses Zoho Books.
+
+   Once connected, POP will create invoices or credit notes directly in that Zoho account.
+3. **Create a Zoho OAuth app:**
+   - Open the [Zoho API Console](https://api-console.zoho.com) and create a **Server-based Application**.
+   - Set the Redirect URI to **exactly**:
+     ```
+     https://popapi.io/it/wp-json/api/v2/integration/oauth/callback?connector=zoho
+     ```
+   - Zoho validates the Redirect URI character-for-character — if you set up the app before this screen showed you the final URL, update the Redirect URI in Zoho and paste the exact value shown on the POP connector page, including `?connector=zoho`.
+4. **Copy the credentials into POP:**
+   - After creating the Zoho app, copy its **Client ID** and **Client Secret** into the corresponding fields on the POP connector page.
+   - In Zoho Invoice or Zoho Books, go to **Settings → Organization Profile** and copy the **Organization ID** into the POP connector page.
+5. Save and authorize the connection. Once `active_connector` is `zoho` and the connection shows as connected, the **Sync Document to Zoho** operation in this node will succeed (you can verify this with **Check Connector Status First** = `Yes`, the default).
 
 ---
 

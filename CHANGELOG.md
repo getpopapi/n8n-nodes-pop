@@ -6,8 +6,13 @@ All notable changes to `@getpopapi/n8n-nodes-pop` are documented here.
 
 ## [Unreleased]
 
+---
+
+## [0.1.6] — 2026-07-08
+
 ### Added
 - **Sync Document to Zoho operation** (`syncZohoDocument`) on the Invoice resource — delegates invoice (TD01) and credit note (TD04) creation to Zoho Books/Invoice via POP's native Zoho connector (`POST /integration/zoho/sync`). Optionally verifies the connector is active first (`GET /integration/zoho/status`, enabled by default) and fails fast with a clear error if not. TD04 requires `connected_invoice_data[0].id`, validated locally in `invoicePayloadBuilder.ts` before the request is sent. Supports Passthrough, Form Fields, and JSON input modes (no Raw). Reuses the existing invoice form fields and payload builder (`invoiceFields.ts`, `invoicePayloadBuilder.ts` — new `'zoho'` variant) rather than introducing a parallel field set.
+- **README — Zoho connector setup guide** — new "Setting Up the Zoho Connector (Prerequisite)" section documenting the one-time POP dashboard setup (Zoho OAuth app, redirect URI, Client ID/Secret, Organization ID) needed before `syncZohoDocument` can succeed, with a link to the full docs at docs.popapi.io/en/api/zoho.
 
 ---
 
