@@ -16,7 +16,7 @@ import { AllEntities, Entity, PropertiesOf } from 'n8n-workflow';
  * Each key is a resource name; its value is a readonly tuple of operation identifiers.
  */
 export const popMap = {
-	invoices: ['createSdiInvoiceXml', 'createPeppolInvoiceUbl', 'getInvoiceStatus', 'getPeppolDocument', 'verifySdiDocument', 'syncZohoDocument'],
+	invoices: ['createSdiInvoiceXml', 'createPeppolInvoiceUbl', 'createKsefInvoiceXml', 'createZugferdInvoice', 'getInvoiceStatus', 'getPeppolDocument', 'verifySdiDocument', 'syncZohoDocument'],
 	vies: ['validateVat'],
 } as const;
 

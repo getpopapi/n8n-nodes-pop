@@ -5,10 +5,12 @@
  * form parameters collected by n8n's UI. This is the core transformation
  * layer between n8n's flat parameter model and the POP API's nested JSON schema.
  *
- * The builder handles three variants:
+ * The builder handles five variants:
  * - 'sdi': Italian SdI (Sistema di Interscambio) via create-xml endpoint
  * - 'peppol': European Peppol network via create-ubl endpoint
  * - 'zoho': POP's native Zoho connector via integration/zoho/sync endpoint
+ * - 'ksef': Polish KSeF FA(3) generation via create-ksef-xml endpoint
+ * - 'zugferd': ZUGFeRD/Factur-X generation via create-zugferd endpoint
  *
  * Key differences between variants:
  * - Peppol includes extra metadata fields (xml_style, view, save, save_bulk)
@@ -24,7 +26,7 @@
  */
 
 /** Discriminator for which API endpoint variant to build the payload for */
-export type InvoiceVariant = 'sdi' | 'peppol' | 'zoho';
+export type InvoiceVariant = 'sdi' | 'peppol' | 'zoho' | 'ksef' | 'zugferd';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /** Loose record type used throughout to avoid strict typing on deeply nested API payloads */
@@ -270,7 +272,11 @@ export function buildInvoicePayload(
 	// the POP API to actually submit the invoice to SdI or Peppol
 	if (sendInvoice) {
 		payload.integration = {
-			use: variant === 'peppol' ? 'peppol-via-pop' : 'sdi-via-pop',
+			use: variant === 'peppol'
+				? 'peppol-via-pop'
+				: variant === 'ksef'
+					? 'ksef-via-pop'
+					: 'sdi-via-pop',
 			action: 'create',
 		};
 	}

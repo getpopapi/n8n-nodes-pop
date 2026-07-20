@@ -2,14 +2,14 @@
  * Get Invoice Status
  *
  * Retrieves document notifications/status for a previously submitted
- * SdI invoice via the POP API `document-notifications` endpoint.
+ * SdI invoice via the POP API `sdi/document-notifications` endpoint.
  *
  * Request payload: { license_key, integration: { uuid } }
  * The UUID is obtained from the response of a prior create-xml call.
  *
  * Supports passthrough, form, JSON, and raw input modes.
  *
- * POP API endpoint: POST /document-notifications
+ * POP API endpoint: POST /sdi/document-notifications
  */
 import type { IExecuteFunctions, INodePropertyOptions } from 'n8n-workflow';
 import { InvoicesProperties } from '../types/pop';
@@ -46,7 +46,7 @@ export const properties: InvoicesProperties = [
 		displayName: 'Endpoint Path',
 		name: 'path',
 		type: 'string',
-		default: 'document-notifications',
+		default: 'sdi/document-notifications',
 		displayOptions: { show: { resource: ['invoices'], operation: [OPERATION] } },
 		description: 'Relative path of the POP endpoint for document notifications',
 	},

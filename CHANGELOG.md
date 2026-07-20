@@ -6,6 +6,15 @@ All notable changes to `@getpopapi/n8n-nodes-pop` are documented here.
 
 ## [Unreleased]
 
+### Added
+- **Create KSeF Invoice (FA(3) XML)** using `POST /create-ksef-xml`.
+- **Create ZUGFeRD Invoice** using `POST /create-zugferd`.
+
+### Changed
+- Corrected the default SdI status endpoint to `POST /sdi/document-notifications`.
+
+## [0.2.0]
+
 ---
 
 ## [0.1.6] — 2026-07-08

@@ -24,7 +24,7 @@
 import type { INodeProperties } from 'n8n-workflow';
 
 /** The invoice creation/sync operations that share these form fields */
-type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl' | 'syncZohoDocument';
+type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl' | 'createKsefInvoiceXml' | 'createZugferdInvoice' | 'syncZohoDocument';
 
 /**
  * Factory that returns the full set of form-mode INodeProperties

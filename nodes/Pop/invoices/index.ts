@@ -21,6 +21,8 @@ import { INodeProperties } from 'n8n-workflow';
 
 import * as createSdiInvoiceXml from './createSdiInvoiceXml';
 import * as createPeppolInvoiceUbl from './createPeppolInvoiceUbl';
+import * as createKsefInvoiceXml from './createKsefInvoiceXml';
+import * as createZugferdInvoice from './createZugferdInvoice';
 import * as getInvoiceStatus from './getInvoiceStatus';
 import * as getPeppolDocument from './getPeppolDocument';
 import * as verifySdiDocument from './verifySdiDocument';
@@ -63,6 +65,8 @@ export const properties: INodeProperties[] = [
 		options: [
 			createSdiInvoiceXml.options,
 			createPeppolInvoiceUbl.options,
+			createKsefInvoiceXml.options,
+			createZugferdInvoice.options,
 			getInvoiceStatus.options,
 			getPeppolDocument.options,
 			verifySdiDocument.options,
@@ -73,6 +77,8 @@ export const properties: INodeProperties[] = [
 	// Spread each operation's fields — n8n uses displayOptions to show/hide them
 	...createSdiInvoiceXml.properties,
 	...createPeppolInvoiceUbl.properties,
+	...createKsefInvoiceXml.properties,
+	...createZugferdInvoice.properties,
 	...getInvoiceStatus.properties,
 	...getPeppolDocument.properties,
 	...verifySdiDocument.properties,
@@ -86,6 +92,8 @@ export const properties: INodeProperties[] = [
 export const invoices = {
 	createSdiInvoiceXml,
 	createPeppolInvoiceUbl,
+	createKsefInvoiceXml,
+	createZugferdInvoice,
 	getInvoiceStatus,
 	getPeppolDocument,
 	verifySdiDocument,

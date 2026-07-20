@@ -12,9 +12,11 @@ It follows the same architecture as the Musixmatch reference repo:
 ### `invoices` resource
 - **createSdiInvoiceXml** — `POST /create-xml` — generates an Italian FatturaPA (SdI) invoice
 - **createPeppolInvoiceUbl** — `POST /create-ubl` — generates a Peppol UBL invoice
-- **getInvoiceStatus** — `POST /document-notifications` — retrieves SdI notification events by UUID
+- **createKsefInvoiceXml** — `POST /create-ksef-xml` — generates KSeF FA(3) XML and optionally submits through KSeF
+- **createZugferdInvoice** — `POST /create-zugferd` — generates a ZUGFeRD/Factur-X package
+- **getInvoiceStatus** — `POST /sdi/document-notifications` — retrieves SdI notification events by UUID
 - **getPeppolDocument** — `POST /peppol/document-get` — retrieves a Peppol document by UUID
-- **verifySdiDocument** — `POST /sdi-via-pop/document-verify` — validates an SdI XML document (passthrough-only: reads XML from the incoming item produced by createSdiInvoiceXml, base64-encodes it, and auto-detects the license key from the upstream node's parameters)
+- **verifySdiDocument** — `POST /sdi/document-verify` — validates an SdI XML document (passthrough-only: reads XML from the incoming item produced by createSdiInvoiceXml, base64-encodes it, and auto-detects the license key from the upstream node's parameters)
 - **syncZohoDocument** — `POST /integration/zoho/sync` (with optional preflight `GET /integration/zoho/status`) — syncs an invoice (TD01) or credit note (TD04) to Zoho Books/Invoice via POP's native Zoho connector. All Zoho-side mapping happens server-side in `pop-cloud-api` (`ConnectorZohoPayloadBuilder`, `classes/connector-zoho-service.php`) — this node only gates on connector status and forwards the standard POP invoice envelope. See [Sync Document to Zoho](#sync-document-to-zoho) notes below.
 
 ### `vies` resource

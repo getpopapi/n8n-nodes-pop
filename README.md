@@ -139,11 +139,27 @@ Generates a **Peppol** invoice in **UBL** format and optionally submits it to th
 - **Input modes:** Passthrough, Form Fields, JSON, Raw
 - Customer type is limited to **Company** or **Freelance** (Peppol does not support Private individuals)
 
+#### Create KSeF Invoice (FA(3) XML)
+
+Generates a Polish KSeF FA(3) invoice or credit note.
+
+- **Endpoint:** `POST /create-ksef-xml`
+- **Input modes:** Passthrough, Form Fields, JSON, Raw
+- **Submit via KSeF Provider:** optionally adds the KSeF provider integration object
+- Provider submission requires completed KSeF onboarding and legal-entity setup.
+
+#### Create ZUGFeRD Invoice
+
+Generates a ZUGFeRD/Factur-X package containing visual PDF, CII XML, and hybrid PDF output.
+
+- **Endpoint:** `POST /create-zugferd`
+- **Input modes:** Passthrough, Form Fields, JSON, Raw
+
 #### Get Invoice Status
 
 Retrieves document notifications for a previously submitted SdI invoice.
 
-- **Endpoint:** `POST /document-notifications`
+- **Endpoint:** `POST /sdi/document-notifications`
 - **Form payload:** `{ license_key, integration: { uuid } }`
 - **Input modes:** Passthrough, Form Fields, JSON, Raw
 
@@ -160,7 +176,7 @@ Retrieves a Peppol document by integration UUID.
 
 Validates an SdI XML document via the POP document-verify endpoint. Designed to be used immediately after **Create SdI Invoice (XML)** in a workflow — it reads the XML from the incoming item, base64-encodes it, and auto-detects the license key from the upstream node.
 
-- **Endpoint:** `POST /sdi-via-pop/document-verify`
+- **Endpoint:** `POST /sdi/document-verify`
 - **Input:** Always passthrough — connects directly to the output of the **Create SdI Invoice (XML)** node
 - **License key:** Auto-detected from the upstream POP node (supports both Form Fields and JSON input modes of the upstream node). No manual entry required.
 - **Payload sent:** `{ license_key, skip_business_check: true, integration: { xml: "<base64-encoded XML>" } }`
@@ -593,7 +609,7 @@ Optional advanced fields available in both SDI and Peppol form modes:
 }
 ```
 
-### Get Invoice Status — `POST /document-notifications`
+### Get Invoice Status — `POST /sdi/document-notifications`
 
 ```json
 {
@@ -616,7 +632,7 @@ Optional advanced fields available in both SDI and Peppol form modes:
 }
 ```
 
-### Verify SdI Document — `POST /sdi-via-pop/document-verify`
+### Verify SdI Document — `POST /sdi/document-verify`
 
 > This operation has no manual payload — it is always passthrough. The node reads the XML from the incoming item (output of **Create SdI Invoice (XML)**), base64-encodes it, and auto-detects the license key from the upstream node.
 
@@ -719,6 +735,8 @@ n8n-nodes-pop/
 │   │   ├── invoicePayloadBuilder.ts # Assembles API payloads from form values
 │   │   ├── createSdiInvoiceXml.ts   # Operation: Create SdI Invoice
 │   │   ├── createPeppolInvoiceUbl.ts# Operation: Create Peppol Invoice
+│   │   ├── createKsefInvoiceXml.ts  # Operation: Create KSeF FA(3) XML
+│   │   ├── createZugferdInvoice.ts  # Operation: Create ZUGFeRD package
 │   │   ├── getInvoiceStatus.ts      # Operation: Get Invoice Status
 │   │   ├── getPeppolDocument.ts     # Operation: Get Peppol Document
 │   │   ├── verifySdiDocument.ts     # Operation: Verify SdI Document (XML)
