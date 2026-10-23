@@ -12,7 +12,6 @@ All notable changes to `@getpopapi/n8n-nodes-pop` are documented here.
 - **Create ZUGFeRD Invoice** using `POST /create-zugferd`.
 
 ### Changed
-- **Create Peppol Invoice (UBL)**: *VAT Exemption Code* (`nature`) is now a list of the official VATEX codes instead of free text. Other operations keep the free-text field (e.g. SdI `N1`–`N7`). Workflows with a saved free-text value still send it unchanged.
 - Corrected the default SdI status endpoint to `POST /sdi/document-notifications`.
 
 ## [0.2.0]

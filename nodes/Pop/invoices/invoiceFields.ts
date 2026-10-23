@@ -22,7 +22,6 @@
  * H. Additional Options (advanced/optional fields)
  */
 import type { INodeProperties } from 'n8n-workflow';
-import { vatexCodeOptions } from './vatexCodes';
 
 /** The invoice creation/sync operations that share these form fields */
 type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl' | 'createKsefInvoiceXml' | 'createZugferdInvoice' | 'syncZohoDocument';
@@ -890,24 +889,13 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					default: '',
 					description: 'Normative reference text for VAT exempt operations',
 				},
-				// Peppol offers the official VATEX list; other operations keep the free-text
-				// nature code (e.g. SdI N1-N7) so their payloads are unchanged.
-				operation === 'createPeppolInvoiceUbl'
-					? {
-							displayName: 'VAT Exemption Code',
-							name: 'nature',
-							type: 'options',
-							options: vatexCodeOptions,
-							default: '',
-							description: 'VATEX code for VAT exempt operations. Use VATEX-EU-IC for intra-EU supplies of goods (Delivery Country is then required).',
-						}
-					: {
-							displayName: 'VAT Exemption Code',
-							name: 'nature',
-							type: 'string',
-							default: '',
-							description: 'Nature code for VAT exempt operations (e.g. N1, N2, N3, N4)',
-						},
+				{
+					displayName: 'VAT Exemption Code',
+					name: 'nature',
+					type: 'string',
+					default: '',
+					description: 'Exemption code for VAT exempt operations, chosen by the merchant. Usual examples: VATEX-EU-G, VATEX-EU-IC, VATEX-EU-AE and VATEX-EU-O for Peppol, or N1 to N7 for SdI.',
+				},
 				{
 					displayName: 'VIES',
 					name: 'vies',
