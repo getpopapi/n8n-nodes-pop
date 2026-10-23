@@ -394,11 +394,13 @@ Optional advanced fields available in both SDI and Peppol form modes:
 | Field                        | Description                                                        |
 |------------------------------|--------------------------------------------------------------------|
 | Connected Invoice Data (JSON)| Connected invoice references as a JSON array                       |
+| Delivery Country (Peppol)    | ISO 3166-1 alpha-2 country where the goods are delivered (sent as `delivery_data.country`). Required for intra-EU supplies of goods (`VATEX-EU-IC`); credit notes must use the same country as the invoice they reverse |
+| Delivery Date (Peppol)       | Delivery date (`YYYY-MM-DD`, sent as `delivery_data.date`). If empty, the API uses the document date |
 | Document Type (String)       | Document type string (e.g. `invoice`, `credit_note`)              |
 | Purchase Order Date          | Date of the related purchase order (`YYYY-MM-DD`)                 |
 | Purchase Order ID            | Reference to the related purchase order                            |
 | Tax Exemption Reason         | Normative reference text for VAT exempt operations                |
-| VAT Exemption Code           | Nature code for VAT exempt operations (e.g. `N1`, `N2`, `N3`, `N4`) |
+| VAT Exemption Code           | Nature code for VAT exempt operations (e.g. `N1`, `N2`, `N3`, `N4`). On **Create Peppol Invoice (UBL)** this is a list of the official VATEX codes (e.g. `VATEX-EU-IC`) |
 | VIES                         | Whether the transaction is intra-EU and VIES validated (`true`/`false`) |
 
 ---

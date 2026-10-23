@@ -22,6 +22,7 @@
  * H. Additional Options (advanced/optional fields)
  */
 import type { INodeProperties } from 'n8n-workflow';
+import { vatexCodeOptions } from './vatexCodes';
 
 /** The invoice creation/sync operations that share these form fields */
 type InvoiceOperation = 'createSdiInvoiceXml' | 'createPeppolInvoiceUbl' | 'createKsefInvoiceXml' | 'createZugferdInvoice' | 'syncZohoDocument';
@@ -840,6 +841,26 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					default: '[]',
 					description: 'Connected invoice references as a JSON array. Required (each entry needs a numeric identifier) when Document Type is TD04 (Credit Note) for the Sync Document to Zoho action.',
 				},
+				...(operation === 'createPeppolInvoiceUbl'
+					? [
+							{
+								displayName: 'Delivery Country',
+								name: 'deliveryCountry',
+								type: 'string' as const,
+								default: '',
+								placeholder: 'FR',
+								description: 'Country where the goods are delivered (ISO 3166-1 alpha-2, country only, never the address). Required for intra-EU supplies of goods. For credit notes, use the same country as the invoice being reversed.',
+							},
+							{
+								displayName: 'Delivery Date',
+								name: 'deliveryDate',
+								type: 'string' as const,
+								default: '',
+								placeholder: '2026-09-10',
+								description: 'Date of delivery (YYYY-MM-DD). If empty, the document date is used.',
+							},
+						]
+					: []),
 				{
 					displayName: 'Document Type (String)',
 					name: 'type',
@@ -869,13 +890,24 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					default: '',
 					description: 'Normative reference text for VAT exempt operations',
 				},
-				{
-					displayName: 'VAT Exemption Code',
-					name: 'nature',
-					type: 'string',
-					default: '',
-					description: 'Nature code for VAT exempt operations (e.g. N1, N2, N3, N4)',
-				},
+				// Peppol offers the official VATEX list; other operations keep the free-text
+				// nature code (e.g. SdI N1-N7) so their payloads are unchanged.
+				operation === 'createPeppolInvoiceUbl'
+					? {
+							displayName: 'VAT Exemption Code',
+							name: 'nature',
+							type: 'options',
+							options: vatexCodeOptions,
+							default: '',
+							description: 'VATEX code for VAT exempt operations. Use VATEX-EU-IC for intra-EU supplies of goods (Delivery Country is then required).',
+						}
+					: {
+							displayName: 'VAT Exemption Code',
+							name: 'nature',
+							type: 'string',
+							default: '',
+							description: 'Nature code for VAT exempt operations (e.g. N1, N2, N3, N4)',
+						},
 				{
 					displayName: 'VIES',
 					name: 'vies',

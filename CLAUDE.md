@@ -111,7 +111,7 @@ The published package is not auto-discovered — each n8n instance must install 
 
 ## Changelog summary
 
-- **Unreleased** — Added `syncZohoDocument` operation (Invoice resource): syncs invoices/credit notes to Zoho via POP's native connector, with a connector-status preflight check and local TD04 validation. See [Sync Document to Zoho](#sync-document-to-zoho) below.
+- **Unreleased** — Peppol: optional `delivery_data` (`deliveryCountry`/`deliveryDate` in Additional Options, Peppol operation only, validated in `invoicePayloadBuilder.ts`, omitted when empty) and `nature` as an `options` list of VATEX codes (`invoices/vatexCodes.ts`, Peppol operation only; other operations keep the free-text field). Added `syncZohoDocument` operation (Invoice resource): syncs invoices/credit notes to Zoho via POP's native connector, with a connector-status preflight check and local TD04 validation. See [Sync Document to Zoho](#sync-document-to-zoho) below.
 - **v0.1.5** (2026-05-20) — New logo (clean SVG), `environment` body param on all 5 invoice operations, README overhauled (license key section + brand consistency). NPM token expired during publish — had to rotate and re-run.
 - **v0.1.4** (2026-04-30) — n8n verification fixes: NodeApiError, English labels, codex subcategories removed.
 - **v0.1.3** (2026-04-29) — Scanner fixes: no-op sleep (setTimeout banned), credential test added.
