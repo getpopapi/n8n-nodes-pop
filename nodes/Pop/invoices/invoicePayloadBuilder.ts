@@ -17,6 +17,7 @@
  * - Peppol includes top-level user_agent_version metadata
  * - Tax regime defaults to 'RF01' for SdI, empty string for Peppol and Zoho
  * - SDI type comes from a required top-level field for SdI, from additional options for Peppol/Zoho
+ * - delivery_data (country/date) is emitted only when set (Peppol intra-EU supplies, VATEX-EU-IC)
  * - Zoho requires connected_invoice_data[0].id when doc_type is TD04 (Credit Note),
  *   enforced here since n8n form fields can't express cross-field conditional requirements
  *
@@ -110,6 +111,17 @@ export function buildInvoicePayload(
 				'Connected Invoice Data with an "id" field is required when Document Type is TD04 (Credit Note)',
 			);
 		}
+	}
+
+	// Optional delivery block (required by the API for Peppol intra-EU supplies,
+	// VATEX-EU-IC). Validated here since n8n string fields can't enforce a format.
+	const deliveryCountry = String(opts.deliveryCountry ?? '').trim().toUpperCase();
+	const deliveryDate = String(opts.deliveryDate ?? '').trim();
+	if (deliveryCountry && !/^[A-Z]{2}$/.test(deliveryCountry)) {
+		throw new Error('Delivery Country must be a 2-letter ISO 3166-1 alpha-2 code (e.g. FR)');
+	}
+	if (deliveryDate && !/^\d{4}-\d{2}-\d{2}$/.test(deliveryDate)) {
+		throw new Error('Delivery Date must use the YYYY-MM-DD format');
 	}
 
 	// Build the complete API payload. The structure matches the POP API v2 schema
@@ -218,6 +230,14 @@ export function buildInvoicePayload(
 				id: opts.purchaseOrderId || '',
 				date: opts.purchaseOrderDate || '',
 			},
+			...(deliveryCountry || deliveryDate
+				? {
+						delivery_data: {
+							...(deliveryCountry ? { country: deliveryCountry } : {}),
+							...(deliveryDate ? { date: deliveryDate } : {}),
+						},
+					}
+				: {}),
 			connected_invoice_data: connectedInvoiceData,
 			// Map each line item from the n8n form structure to the API schema
 		order_items: items.map((item: AnyRecord, index: number) => {
