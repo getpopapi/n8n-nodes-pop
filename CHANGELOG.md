@@ -6,15 +6,27 @@ All notable changes to `@getpopapi/n8n-nodes-pop` are documented here.
 
 ## [Unreleased]
 
+---
+
+## [0.3.0] - 2026-10-29
+
 ### Added
 - **Peppol `delivery_data`**: new optional *Delivery Country* and *Delivery Date* fields on Create Peppol Invoice (UBL), sent as `delivery_data.{country,date}`. The API requires the country for intra-EU supplies of goods (`VATEX-EU-IC`), including credit notes. Nothing is sent when both are empty.
+
+### Changed
+- The *VAT Exemption Code* (`nature`) field description now says that the merchant chooses the code, with the usual examples (`VATEX-EU-G`, `VATEX-EU-IC`, `VATEX-EU-AE`, `VATEX-EU-O` for Peppol, `N1` to `N7` for SdI). The field stays free text on every operation.
+
+---
+
+## [0.2.0] - 2026-07-20
+
+### Added
 - **Create KSeF Invoice (FA(3) XML)** using `POST /create-ksef-xml`.
 - **Create ZUGFeRD Invoice** using `POST /create-zugferd`.
 
 ### Changed
 - Corrected the default SdI status endpoint to `POST /sdi/document-notifications`.
 
-## [0.2.0]
 
 ---
 
