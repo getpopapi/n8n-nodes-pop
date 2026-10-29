@@ -840,6 +840,26 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					default: '[]',
 					description: 'Connected invoice references as a JSON array. Required (each entry needs a numeric identifier) when Document Type is TD04 (Credit Note) for the Sync Document to Zoho action.',
 				},
+				...(operation === 'createPeppolInvoiceUbl'
+					? [
+							{
+								displayName: 'Delivery Country',
+								name: 'deliveryCountry',
+								type: 'string' as const,
+								default: '',
+								placeholder: 'FR',
+								description: 'Country where the goods are delivered (ISO 3166-1 alpha-2, country only, never the address). Required for intra-EU supplies of goods. For credit notes, use the same country as the invoice being reversed.',
+							},
+							{
+								displayName: 'Delivery Date',
+								name: 'deliveryDate',
+								type: 'string' as const,
+								default: '',
+								placeholder: '2026-09-10',
+								description: 'Date of delivery (YYYY-MM-DD). If empty, the document date is used.',
+							},
+						]
+					: []),
 				{
 					displayName: 'Document Type (String)',
 					name: 'type',
@@ -874,7 +894,7 @@ export function makeInvoiceFormFields(operation: InvoiceOperation): INodePropert
 					name: 'nature',
 					type: 'string',
 					default: '',
-					description: 'Nature code for VAT exempt operations (e.g. N1, N2, N3, N4)',
+					description: 'Exemption code for VAT exempt operations, chosen by the merchant. Usual examples: VATEX-EU-G, VATEX-EU-IC, VATEX-EU-AE and VATEX-EU-O for Peppol, or N1 to N7 for SdI.',
 				},
 				{
 					displayName: 'VIES',
